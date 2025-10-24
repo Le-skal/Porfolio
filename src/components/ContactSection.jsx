@@ -11,9 +11,11 @@ import {
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-export const ContactSection = () => {
+export const ContactSection = ({ isPopup }) => {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = (e) => {
@@ -23,161 +25,175 @@ export const ContactSection = () => {
 
     setTimeout(() => {
       toast({
-        title: "Message sent!",
-        description: "Thank you for your message. I'll get back to you soon.",
+        title: t("contact.messageSent"),
+        description: t("contact.messageSentDesc"),
       });
       setIsSubmitting(false);
     }, 1500);
   };
+  
   return (
-    <section id="contact" className="py-24 px-4 relative bg-secondary/30">
-      <div className="container mx-auto max-w-5xl">
-        <h2 className="text-3xl md:text-4xl font-bold mb-4 text-center">
-          Get In <span className="text-primary"> Touch</span>
-        </h2>
+    <section id="contact" className={isPopup ? "w-full" : "py-24 px-4 relative"}>
+      <div className={isPopup ? "w-full" : "container mx-auto max-w-5xl"}>
+        {/* Header */}
+        {!isPopup && (
+          <div className="space-y-3 mb-8">
+            <h2 className="text-3xl md:text-4xl font-semibold uppercase tracking-tight">
+              {t("contact.title")}
+            </h2>
+            <p className="text-sm text-foreground/60 uppercase tracking-widest">
+              {t("contact.subtitle")}
+            </p>
+          </div>
+        )}
 
-        <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-          Have a project in mind or want to collaborate? Feel free to reach out.
-          I'm always open to discussing new opportunities.
-        </p>
+        {!isPopup && (
+          <p className="text-sm text-foreground/70 mb-8 max-w-2xl leading-relaxed">
+            {t("contact.description")}
+          </p>
+        )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          <div className="space-y-8">
-            <h3 className="text-2xl font-semibold mb-6">
-              {" "}
-              Contact Information
-            </h3>
+        <div className={isPopup ? "space-y-3" : "grid grid-cols-1 lg:grid-cols-2 gap-8"}>
+          {/* Contact Info */}
+          <div className={isPopup ? "space-y-2" : "space-y-6"}>
+            {!isPopup && (
+              <h3 className="text-sm font-semibold uppercase tracking-widest mb-4">
+                {t("contact.contactInfo")}
+              </h3>
+            )}
 
-            <div className="space-y-6 justify-center">
-              <div className="flex items-start space-x-4">
-                <div className="p-3 rounded-full bg-primary/10">
-                  <Mail className="h-6 w-6 text-primary" />{" "}
+            <div className={isPopup ? "space-y-2" : "space-y-4"}>
+              <div className={isPopup ? "flex items-center gap-2" : "flex items-start space-x-4"}>
+                <div className={isPopup ? "p-1 bg-gray-300 rounded-sm flex-shrink-0" : "p-2 bg-primary/10 rounded-sm flex-shrink-0"}>
+                  <Mail className={isPopup ? "h-4 w-4 text-gray-700" : "h-5 w-5 text-primary"} />
                 </div>
                 <div>
-                  <h4 className="font-medium"> Email</h4>
+                  <h4 className={isPopup ? "font-semibold text-xs text-gray-800" : "font-semibold text-xs uppercase tracking-wide mb-1"}>
+                    {t("contact.email")}
+                  </h4>
                   <a
-                    href="mailto:hello@gmail.com"
-                    className="text-muted-foreground hover:text-primary transition-colors"
+                    href="mailto:raphael.martin.2004@gmail.com"
+                    className={isPopup ? "text-xs text-gray-700 hover:text-blue-600 transition-colors" : "text-sm text-foreground/70 hover:text-primary transition-colors"}
                   >
-                    hello@gmail.com
+                    raphael.martin.2004@gmail.com
                   </a>
                 </div>
               </div>
-              <div className="flex items-start space-x-4">
-                <div className="p-3 rounded-full bg-primary/10">
-                  <Phone className="h-6 w-6 text-primary" />{" "}
+
+              <div className={isPopup ? "flex items-center gap-2" : "flex items-start space-x-4"}>
+                <div className={isPopup ? "p-1 bg-gray-300 rounded-sm flex-shrink-0" : "p-2 bg-primary/10 rounded-sm flex-shrink-0"}>
+                  <Phone className={isPopup ? "h-4 w-4 text-gray-700" : "h-5 w-5 text-primary"} />
                 </div>
                 <div>
-                  <h4 className="font-medium"> Phone</h4>
+                  <h4 className={isPopup ? "font-semibold text-xs text-gray-800" : "font-semibold text-xs uppercase tracking-wide mb-1"}>
+                    {t("contact.phone")}
+                  </h4>
                   <a
-                    href="tel:+11234567890"
-                    className="text-muted-foreground hover:text-primary transition-colors"
+                    href="tel:+33677151276"
+                    className={isPopup ? "text-xs text-gray-700 hover:text-blue-600 transition-colors" : "text-sm text-foreground/70 hover:text-primary transition-colors"}
                   >
-                    +1 (123) 456-7890
+                    +33 (0)6 77 15 12 76
                   </a>
                 </div>
               </div>
-              <div className="flex items-start space-x-4">
-                <div className="p-3 rounded-full bg-primary/10">
-                  <MapPin className="h-6 w-6 text-primary" />{" "}
+
+              <div className={isPopup ? "flex items-center gap-2" : "flex items-start space-x-4"}>
+                <div className={isPopup ? "p-1 bg-gray-300 rounded-sm flex-shrink-0" : "p-2 bg-primary/10 rounded-sm flex-shrink-0"}>
+                  <MapPin className={isPopup ? "h-4 w-4 text-gray-700" : "h-5 w-5 text-primary"} />
                 </div>
                 <div>
-                  <h4 className="font-medium"> Location</h4>
-                  <a className="text-muted-foreground hover:text-primary transition-colors">
-                    Vancouver, BC, Canada
-                  </a>
+                  <h4 className={isPopup ? "font-semibold text-xs text-gray-800" : "font-semibold text-xs uppercase tracking-wide mb-1"}>
+                    {t("contact.location")}
+                  </h4>
+                  <p className={isPopup ? "text-xs text-gray-700" : "text-sm text-foreground/70"}>
+                    Paris, 75015, France
+                  </p>
                 </div>
               </div>
             </div>
 
-            <div className="pt-8">
-              <h4 className="font-medium mb-4"> Connect With Me</h4>
-              <div className="flex space-x-4 justify-center">
-                <a href="#" target="_blank">
-                  <Linkedin />
-                </a>
-                <a href="#" target="_blank">
-                  <Twitter />
-                </a>
-                <a href="#" target="_blank">
-                  <Instagram />
-                </a>
-                <a href="#" target="_blank">
-                  <Twitch />
+            {!isPopup && (
+              <div className="pt-4 border-t border-foreground/10">
+                <h4 className="font-semibold text-xs uppercase tracking-widest mb-4">
+                  {t("contact.connectWithMe")}
+                </h4>
+                <a
+                  href="https://www.linkedin.com/in/raphael-martin-10a17128a/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 text-sm text-foreground/70 hover:text-primary transition-colors"
+                >
+                  <Linkedin size={18} />
+                  <span className="uppercase tracking-wide">LinkedIn</span>
                 </a>
               </div>
-            </div>
+            )}
           </div>
 
-          <div
-            className="bg-card p-8 rounded-lg shadow-xs"
-            onSubmit={handleSubmit}
-          >
-            <h3 className="text-2xl font-semibold mb-6"> Send a Message</h3>
+          {/* Contact Form */}
+          <div className={isPopup ? "border-t border-gray-400 pt-2" : "border border-foreground/10 p-6 bg-card/50"}>
+            <h3 className={isPopup ? "text-xs font-semibold uppercase tracking-widest mb-3 text-gray-800" : "text-sm font-semibold uppercase tracking-widest mb-6"}>
+              {t("contact.sendAMessage")}
+            </h3>
 
-            <form className="space-y-6">
+            <form className={isPopup ? "space-y-2" : "space-y-4"} onSubmit={handleSubmit}>
               <div>
                 <label
                   htmlFor="name"
-                  className="block text-sm font-medium mb-2"
+                  className={isPopup ? "block text-xs font-semibold text-gray-800 mb-1" : "block text-xs font-semibold uppercase tracking-wider mb-2"}
                 >
-                  {" "}
-                  Your Name
+                  {t("contact.yourName")}
                 </label>
                 <input
                   type="text"
                   id="name"
                   name="name"
                   required
-                  className="w-full px-4 py-3 rounded-md border border-input bg-background focus:outline-hidden foucs:ring-2 focus:ring-primary"
-                  placeholder="Pedro Machado..."
+                  className={isPopup ? "w-full px-2 py-1 text-xs bg-gray-100 border border-gray-400 focus:border-gray-500 focus:outline-none" : "w-full px-3 py-2 text-sm bg-background border border-foreground/10 focus:border-primary focus:outline-none transition-colors"}
+                  placeholder={t("contact.namePlaceholder")}
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium mb-2"
+                  className={isPopup ? "block text-xs font-semibold text-gray-800 mb-1" : "block text-xs font-semibold uppercase tracking-wider mb-2"}
                 >
-                  {" "}
-                  Your Email
+                  {t("contact.yourEmail")}
                 </label>
                 <input
                   type="email"
                   id="email"
                   name="email"
                   required
-                  className="w-full px-4 py-3 rounded-md border border-input bg-background focus:outline-hidden foucs:ring-2 focus:ring-primary"
-                  placeholder="john@gmail.com"
+                  className={isPopup ? "w-full px-2 py-1 text-xs bg-gray-100 border border-gray-400 focus:border-gray-500 focus:outline-none" : "w-full px-3 py-2 text-sm bg-background border border-foreground/10 focus:border-primary focus:outline-none transition-colors"}
+                  placeholder={t("contact.emailPlaceholder")}
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="message"
-                  className="block text-sm font-medium mb-2"
+                  className={isPopup ? "block text-xs font-semibold text-gray-800 mb-1" : "block text-xs font-semibold uppercase tracking-wider mb-2"}
                 >
-                  {" "}
-                  Your Message
+                  {t("contact.yourMessage")}
                 </label>
                 <textarea
                   id="message"
                   name="message"
                   required
-                  className="w-full px-4 py-3 rounded-md border border-input bg-background focus:outline-hidden foucs:ring-2 focus:ring-primary resize-none"
-                  placeholder="Hello, I'd like to talk about..."
+                  className={isPopup ? "w-full px-2 py-1 text-xs bg-gray-100 border border-gray-400 focus:border-gray-500 focus:outline-none resize-none h-16" : "w-full px-3 py-2 text-sm bg-background border border-foreground/10 focus:border-primary focus:outline-none transition-colors resize-none h-24"}
+                  placeholder={t("contact.messagePlaceholder")}
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={cn(
-                  "cosmic-button w-full flex items-center justify-center gap-2"
-                )}
+                className={isPopup ? "w-full px-2 py-1 text-xs bg-gray-400 hover:bg-gray-500 text-gray-900 font-semibold border border-gray-500 transition-colors flex items-center justify-center gap-1" : "cosmic-button w-full flex items-center justify-center gap-2 text-xs"}
               >
-                {isSubmitting ? "Sending..." : "Send Message"}
-                <Send size={16} />
+                {isSubmitting ? t("contact.sending") : t("contact.sendMessage")}
+                <Send size={isPopup ? 12 : 14} />
               </button>
             </form>
           </div>

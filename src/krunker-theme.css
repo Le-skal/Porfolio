@@ -1,0 +1,106 @@
+/* Krunker-Inspired Theme Variables */
+:root {
+  --krunker-primary-bg: #101216;
+  --krunker-sub-bg: #292e39;
+  --krunker-accent: #39ffd4;
+  --krunker-accent-st: #39ffd469;
+  --krunker-white: #dfdfdf;
+  --krunker-white-st: #ffffffb3;
+  --krunker-purple: #987bff;
+  --krunker-orange: #ff9ea2;
+  --krunker-orange-dark: #ff3943;
+  --krunker-green: #8bc34a;
+  --krunker-yellow: #ffeb3b;
+  --krunker-blue: #6797ff;
+  --krunker-blue-dark: #2351b4;
+}
+
+/* Krunker Button Styles */
+.cosmic-button,
+.krunker-button {
+  font-family: "Steradian", sans-serif;
+  background: var(--krunker-sub-bg) !important;
+  filter: brightness(1.4);
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  letter-spacing: 2px;
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  color: var(--krunker-accent) !important;
+  transition: all 280ms ease;
+  text-transform: uppercase;
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+}
+
+.cosmic-button:hover,
+.krunker-button:hover {
+  filter: brightness(1);
+  color: var(--krunker-primary-bg) !important;
+  background: var(--krunker-accent) !important;
+  transform: scale(1.05);
+}
+
+.cosmic-button:active,
+.krunker-button:active {
+  transform: scale(0.95);
+}
+
+/* Colored Button Variants */
+.button-orange {
+  color: var(--krunker-orange) !important;
+}
+
+.button-orange:hover {
+  color: var(--krunker-primary-bg) !important;
+  background: var(--krunker-orange) !important;
+}
+
+.button-green {
+  color: var(--krunker-green) !important;
+}
+
+.button-green:hover {
+  color: var(--krunker-primary-bg) !important;
+  background: var(--krunker-green) !important;
+}
+
+.button-purple {
+  color: var(--krunker-purple) !important;
+}
+
+.button-purple:hover {
+  color: var(--krunker-primary-bg) !important;
+  background: var(--krunker-purple) !important;
+}
+
+.button-blue {
+  color: var(--krunker-blue) !important;
+}
+
+.button-blue:hover {
+  color: var(--krunker-primary-bg) !important;
+  background: var(--krunker-blue) !important;
+}
+
+/* Krunker Font */
+@font-face {
+  src: url("https://raw.githubusercontent.com/MOF1/krunker_css/main/css/fonts/Steradian-Bold.otf");
+  font-family: "Steradian";
+  font-weight: 900;
+}
+
+@font-face {
+  src: url("https://raw.githubusercontent.com/MOF1/krunker_css/main/css/fonts/EuclidCircularA-Medium.ttf");
+  font-family: "Circular";
+}
+
+/* Enhanced Button in Navbar */
+button[class*="button"],
+a[class*="cosmic"],
+.navbar button {
+  font-family: "Steradian", sans-serif !important;
+  letter-spacing: 1px;
+}

@@ -1,90 +1,100 @@
 import { Briefcase, Code, User } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-export const AboutSection = () => {
+export const AboutSection = ({ isPopup }) => {
+  const { t } = useLanguage();
+  
   return (
-    <section id="about" className="py-24 px-4 relative">
-      {" "}
-      <div className="container mx-auto max-w-5xl">
-        <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center">
-          About <span className="text-primary"> Me</span>
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-            <h3 className="text-2xl font-semibold">
-              Passionate Web Developer & Tech Creator
-            </h3>
-
-            <p className="text-muted-foreground">
-              With over 5 years of experience in web development, I specialize
-              in creating responsive, accessible, and performant web
-              applications using modern technologies.
-            </p>
-
-            <p className="text-muted-foreground">
-              I'm passionate about creating elegant solutions to complex
-              problems, and I'm constantly learning new technologies and
-              techniques to stay at the forefront of the ever-evolving web
-              landscape.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 pt-4 justify-center">
-              <a href="#contact" className="cosmic-button">
-                {" "}
-                Get In Touch
-              </a>
-
-              <a
-                href=""
-                className="px-6 py-2 rounded-full border border-primary text-primary hover:bg-primary/10 transition-colors duration-300"
-              >
-                Download CV
-              </a>
+    <section id="about" className={isPopup ? "w-full" : "py-24 px-4 relative"}>
+      <div className={isPopup ? "w-full" : "container mx-auto max-w-5xl"}>
+        <div className={isPopup ? "space-y-4" : "space-y-8"}>
+          {/* Header */}
+          {!isPopup && (
+            <div className="space-y-3">
+              <h2 className="text-3xl md:text-4xl font-semibold uppercase tracking-tight">
+                {t("about.title")}
+              </h2>
+              <p className="text-sm text-foreground/60 uppercase tracking-widest">
+                {t("about.subtitle")}
+              </p>
             </div>
-          </div>
+          )}
 
-          <div className="grid grid-cols-1 gap-6">
-            <div className="gradient-border p-6 card-hover">
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-full bg-primary/10">
-                  <Code className="h-6 w-6 text-primary" />
+          {/* Main content */}
+          <div className={isPopup ? "space-y-3" : "space-y-6"}>
+            <div className={isPopup ? "space-y-2" : "space-y-4 border-l-2 border-primary/50 pl-6"}>
+              {!isPopup && (
+                <h3 className="text-lg font-semibold uppercase tracking-wide">
+                  {t("about.heading")}
+                </h3>
+              )}
+
+              <p className={isPopup ? "text-xs text-gray-700 leading-relaxed" : "text-sm text-foreground/70 leading-relaxed"}>
+                {t("about.description1")}
+              </p>
+
+              <p className={isPopup ? "text-xs text-gray-700 leading-relaxed" : "text-sm text-foreground/70 leading-relaxed"}>
+                {t("about.description2")}
+              </p>
+
+              {!isPopup && (
+                <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                  <a href="#contact" className="cosmic-button text-xs">
+                    {t("about.getInTouch")}
+                  </a>
+
+                  <a
+                    href=""
+                    className="px-6 py-3 text-xs font-semibold uppercase tracking-widest bg-transparent border border-foreground/30 text-foreground hover:border-foreground hover:bg-foreground/5 transition-all duration-300"
+                  >
+                    {t("about.downloadCV")}
+                  </a>
                 </div>
-                <div className="text-left">
-                  <h4 className="font-semibold text-lg"> Web Development</h4>
-                  <p className="text-muted-foreground">
-                    Creating responsive websites and web applications with
-                    modern frameworks.
-                  </p>
+              )}
+            </div>
+
+            {/* Skills cards */}
+            <div className={isPopup ? "grid grid-cols-1 gap-2" : "grid grid-cols-1 md:grid-cols-3 gap-4 pt-6"}>
+              <div className={isPopup ? "p-2 bg-gray-200/50 border border-gray-400" : "p-4 border border-foreground/10 hover:border-primary/50 transition-all duration-300 bg-card/50 hover:bg-card/80"}>
+                <div className="flex items-start gap-2 mb-2">
+                  <div className={isPopup ? "p-1 bg-gray-300 rounded-sm" : "p-2 bg-primary/10 rounded-sm"}>
+                    <Code className={isPopup ? "h-4 w-4 text-gray-700" : "h-5 w-5 text-primary"} />
+                  </div>
+                  <div>
+                    <h4 className={isPopup ? "font-semibold text-xs text-gray-800" : "font-semibold text-sm uppercase tracking-wide text-foreground"}>{t("about.webDevelopment")}</h4>
+                  </div>
                 </div>
+                <p className={isPopup ? "text-xs text-gray-700 leading-relaxed" : "text-xs text-foreground/60 leading-relaxed"}>
+                  {t("about.webDevelopmentDesc")}
+                </p>
               </div>
-            </div>
-            <div className="gradient-border p-6 card-hover">
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-full bg-primary/10">
-                  <User className="h-6 w-6 text-primary" />
-                </div>
-                <div className="text-left">
-                  <h4 className="font-semibold text-lg">UI/UX Design</h4>
-                  <p className="text-muted-foreground">
-                    Designing intuitive user interfaces and seamless user
-                    experiences.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="gradient-border p-6 card-hover">
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-full bg-primary/10">
-                  <Briefcase className="h-6 w-6 text-primary" />
-                </div>
 
-                <div className="text-left">
-                  <h4 className="font-semibold text-lg">Project Management</h4>
-                  <p className="text-muted-foreground">
-                    Leading projects from conception to completion with agile
-                    methodologies.
-                  </p>
+              <div className={isPopup ? "p-2 bg-gray-200/50 border border-gray-400" : "p-4 border border-foreground/10 hover:border-primary/50 transition-all duration-300 bg-card/50 hover:bg-card/80"}>
+                <div className="flex items-start gap-2 mb-2">
+                  <div className={isPopup ? "p-1 bg-gray-300 rounded-sm" : "p-2 bg-primary/10 rounded-sm"}>
+                    <User className={isPopup ? "h-4 w-4 text-gray-700" : "h-5 w-5 text-primary"} />
+                  </div>
+                  <div>
+                    <h4 className={isPopup ? "font-semibold text-xs text-gray-800" : "font-semibold text-sm uppercase tracking-wide text-foreground"}>{t("about.uiuxDesign")}</h4>
+                  </div>
                 </div>
+                <p className={isPopup ? "text-xs text-gray-700 leading-relaxed" : "text-xs text-foreground/60 leading-relaxed"}>
+                  {t("about.uiuxDesignDesc")}
+                </p>
+              </div>
+
+              <div className={isPopup ? "p-2 bg-gray-200/50 border border-gray-400" : "p-4 border border-foreground/10 hover:border-primary/50 transition-all duration-300 bg-card/50 hover:bg-card/80"}>
+                <div className="flex items-start gap-2 mb-2">
+                  <div className={isPopup ? "p-1 bg-gray-300 rounded-sm" : "p-2 bg-primary/10 rounded-sm"}>
+                    <Briefcase className={isPopup ? "h-4 w-4 text-gray-700" : "h-5 w-5 text-primary"} />
+                  </div>
+                  <div>
+                    <h4 className={isPopup ? "font-semibold text-xs text-gray-800" : "font-semibold text-sm uppercase tracking-wide text-foreground"}>{t("about.projectManagement")}</h4>
+                  </div>
+                </div>
+                <p className={isPopup ? "text-xs text-gray-700 leading-relaxed" : "text-xs text-foreground/60 leading-relaxed"}>
+                  {t("about.projectManagementDesc")}
+                </p>
               </div>
             </div>
           </div>

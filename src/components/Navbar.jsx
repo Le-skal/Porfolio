@@ -1,16 +1,18 @@
 import { cn } from "@/lib/utils";
 import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageToggle } from "./LanguageToggle";
 
 const navItems = [
-  { name: "Home", href: "#hero" },
-  { name: "About", href: "#about" },
-  { name: "Skills", href: "#skills" },
-  { name: "Projects", href: "#projects" },
-  { name: "Contact", href: "#contact" },
+  { name: "about", id: "about" },
+  { name: "skills", id: "skills" },
+  { name: "projects", id: "projects" },
+  { name: "contact", id: "contact" },
 ];
 
-export const Navbar = () => {
+export const Navbar = ({ onOpenWindow }) => {
+  const { t } = useLanguage();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -25,63 +27,64 @@ export const Navbar = () => {
   return (
     <nav
       className={cn(
-        "fixed w-full z-40 transition-all duration-300",
-        isScrolled ? "py-3 bg-background/80 backdrop-blur-md shadow-xs" : "py-5"
+        "fixed w-full z-40 transition-all duration-300 border-b",
+        isScrolled 
+          ? "py-3 bg-background/95 backdrop-blur-md border-gray-800" 
+          : "py-6 bg-transparent border-transparent"
       )}
     >
-      <div className="container flex items-center justify-between">
-        <a
-          className="text-xl font-bold text-primary flex items-center"
-          href="#hero"
-        >
-          <span className="relative z-10">
-            <span className="text-glow text-foreground"> PedroTech </span>{" "}
-            Portfolio
-          </span>
-        </a>
+      <div className="container flex items-center justify-between px-6 md:px-8">
+        <LanguageToggle />
 
         {/* desktop nav */}
-        <div className="hidden md:flex space-x-8">
+        <div className="hidden md:flex gap-8 lg:gap-12">
           {navItems.map((item, key) => (
-            <a
+            <button
               key={key}
-              href={item.href}
-              className="text-foreground/80 hover:text-primary transition-colors duration-300"
+              onClick={() => onOpenWindow(item.id)}
+              className="text-xs font-semibold text-foreground/80 hover:text-primary
+                       transition-colors duration-300 uppercase tracking-[0.15em]
+                       hover:tracking-[0.2em] relative pb-2
+                       after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1px]
+                       after:bg-primary after:transition-all after:duration-300
+                       hover:after:w-full"
             >
-              {item.name}
-            </a>
+              {t(`navbar.${item.name}`)}
+            </button>
           ))}
         </div>
 
         {/* mobile nav */}
-
         <button
           onClick={() => setIsMenuOpen((prev) => !prev)}
           className="md:hidden p-2 text-foreground z-50"
           aria-label={isMenuOpen ? "Close Menu" : "Open Menu"}
         >
-          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}{" "}
+          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
 
         <div
           className={cn(
-            "fixed inset-0 bg-background/95 backdroup-blur-md z-40 flex flex-col items-center justify-center",
+            "fixed inset-0 bg-background/98 z-40 flex flex-col items-center justify-center",
             "transition-all duration-300 md:hidden",
             isMenuOpen
               ? "opacity-100 pointer-events-auto"
               : "opacity-0 pointer-events-none"
           )}
         >
-          <div className="flex flex-col space-y-8 text-xl">
+          <div className="flex flex-col space-y-8 text-lg">
             {navItems.map((item, key) => (
-              <a
+              <button
                 key={key}
-                href={item.href}
-                className="text-foreground/80 hover:text-primary transition-colors duration-300"
-                onClick={() => setIsMenuOpen(false)}
+                onClick={() => {
+                  onOpenWindow(item.id);
+                  setIsMenuOpen(false);
+                }}
+                className="text-sm font-semibold text-foreground hover:text-primary
+                         transition-colors duration-300 uppercase tracking-[0.15em]"
               >
-                {item.name}
-              </a>
+                {t(`navbar.${item.name}`)}
+              </button>
             ))}
           </div>
         </div>
