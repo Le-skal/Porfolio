@@ -1,3 +1,43 @@
+# Node modules
+/node_modules/
+
+# Build outputs
+/dist/
+/build/
+/out/
+
+# Vite cache
+/.vite/
+
+# Local env files
+.env
+.env.*.local
+.env.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# Coverage
+/coverage/
+
+# Parcel / misc cache
+.parcel-cache/
+.cache/
+
+# SSH keys, certs
+*.pem
+
+# Optional: lock files are usually committed; do NOT ignore package-lock.json or pnpm-lock.yaml
 # Logs
 logs
 *.log
