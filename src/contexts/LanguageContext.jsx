@@ -61,6 +61,7 @@ export const translations = {
       messageSent: "Message sent!",
       messageSentDesc: "Thank you for your message. I'll get back to you soon.",
     },
+    closeAllProjects: "Close All Projects",
   },
   fr: {
     navbar: {
@@ -121,6 +122,7 @@ export const translations = {
       messageSentDesc:
         "Merci pour votre message. Je vous répondrai bientôt.",
     },
+    closeAllProjects: "Fermer Tous les Projets",
   },
 };
 

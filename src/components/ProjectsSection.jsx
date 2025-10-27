@@ -1,4 +1,5 @@
 import { ArrowRight, ExternalLink, Github } from "lucide-react";
+import JsBackground from "./JsBackground";
 
 const projects = [
   {
@@ -35,6 +36,8 @@ const projects = [
 export const ProjectsSection = ({ isPopup }) => {
   return (
     <section id="projects" className={isPopup ? "w-full" : "py-24 px-4 relative"}>
+      {/* Background grain/shards specific to projects section */}
+      <JsBackground />
       <div className={isPopup ? "w-full" : "container mx-auto max-w-5xl"}>
         <h2 className="text-2xl font-bold mb-3 text-center">
           {" "}

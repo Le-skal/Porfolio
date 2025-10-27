@@ -1,0 +1,159 @@
+.custom-close-button {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  background: transparent;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 0.2s ease, opacity 0.6s ease 0.2s;
+  overflow: visible;
+  will-change: auto;
+  pointer-events: auto;
+  opacity: 1;
+}
+
+.custom-close-button.closing {
+  opacity: 0;
+}
+
+.custom-close-button:hover {
+  color: rgba(255, 255, 255, 1);
+}
+
+.close-text {
+  position: relative;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/* Filter overlay that appears on hover */
+.filter-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.7);
+  will-change: auto;
+  /* Important: avoid transforms here so fixed children (overlays) are viewport-relative */
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 9997;
+}
+
+.filter-overlay.active {
+  opacity: 1;
+}
+
+.filter-overlay.closing {
+  opacity: 0;
+  transition: opacity 0.6s ease 0.2s;
+}
+
+/* Cross container */
+.cross-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40vw;
+  height: 40vh;
+  pointer-events: none;
+  z-index: 9998;
+  transition: opacity 0.6s ease 0.2s;
+}
+
+.cross-container.fade-out {
+  opacity: 0;
+}
+
+.cross-container.closing {
+  opacity: 0;
+  transform: translate(-50%, -50%);
+}
+
+/* Individual cross bars - much longer and larger using percentages */
+.cross-bar {
+  position: absolute;
+  width: 35vw;
+  height: 2.5vh;
+  background-color: rgba(255, 255, 255, 0.9);
+  top: 50%;
+  left: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease, background-color 0.3s ease;
+}
+
+/* Brighten bars when closing */
+.cross-container.closing .cross-bar {
+  background-color: rgba(255, 255, 255, 1);
+  opacity: 1;
+}
+
+.cross-bar.visible {
+  opacity: 1 !important;
+}
+
+/* First bar (from left, diagonal 45-degree movement) */
+.cross-bar.bar-1 {
+  /* Anchor the visible right end at the screen center so only the LEFT retracts */
+  transform-origin: 100% 50%;
+}
+
+.cross-bar.bar-1.animate {
+  animation: slideBar1 0.8s ease-in-out forwards !important;
+}
+
+/* Second bar (from left, diagonal 45-degree movement, delayed) */
+.cross-bar.bar-2 {
+  transform-origin: center center;
+}
+
+.cross-bar.bar-2.animate {
+  animation: slideBar2 0.8s ease-in-out 0.2s forwards !important;
+}
+
+/* Animation for first bar - slides diagonally from top-left, then shrinks on left side */
+@keyframes slideBar1 {
+  /* Shooting star: long bar flies in; left tail is off-screen, then tail retracts */
+  0% {
+    /* Start far off top-left, very long so left end stays off-screen */
+    transform: translate(calc(-50% - 70vw), calc(-50% - 70vh)) rotate(45deg) scaleX(4);
+    opacity: 1;
+  }
+  60% {
+    /* Head reaches center but remains long (tail still off-screen to the left) */
+    transform: translate(-50%, -50%) rotate(45deg) scaleX(4);
+    opacity: 1;
+  }
+  100% {
+    /* Retract only the LEFT side to final centered length */
+    transform: translate(-50%, -50%) rotate(45deg) scaleX(1);
+    opacity: 1;
+  }
+}
+
+/* Animation for second bar - slides diagonally from bottom-left, then shrinks on left side */
+@keyframes slideBar2 {
+  0% {
+    transform: translate(calc(-50% - 70vw), calc(-50% + 70vh)) rotate(-45deg) scaleX(4);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -50%) rotate(-45deg) scaleX(4);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(-45deg) scaleX(1);
+    opacity: 1;
+  }
+}
