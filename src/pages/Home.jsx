@@ -2,7 +2,6 @@ import { Navbar } from "../components/Navbar";
 import { InteractiveBackground } from "@/components/InteractiveBackground";
 import { HeroSection } from "../components/HeroSection";
 import { AboutSection } from "../components/AboutSection";
-import { SkillsSection } from "../components/SkillsSection";
 import { ProjectsSection } from "../components/ProjectsSection";
 import { ProjectsModal } from "../components/ProjectsModal";
 import { ContactSection } from "../components/ContactSection";
@@ -21,19 +20,22 @@ export const Home = () => {
   };
 
   const handleCloseWindow = (windowId) => {
+    // Dispatch close event so the window can play its exit animation.
+    // Delay removal from state so the animation has time to finish.
     window.dispatchEvent(new CustomEvent('popupClose', { detail: windowId }));
-    setOpenWindows((prev) => {
-      const updated = { ...prev };
-      delete updated[windowId];
-      return updated;
-    });
+    setTimeout(() => {
+      setOpenWindows((prev) => {
+        const updated = { ...prev };
+        delete updated[windowId];
+        return updated;
+      });
+    }, 500); // 500ms matches the AboutSection duration
   };
 
   const windowTitles = {
-    about: "About Me",
-    skills: "My Skills",
+    about: "About Le Skal",
     projects: "My Projects",
-    contact: "Contact Me",
+    contact: "Contact",
   };
 
   return (
@@ -41,30 +43,16 @@ export const Home = () => {
       {/* Background Effects */}
       <InteractiveBackground />
 
-      {/* Navbar */}
-      <Navbar onOpenWindow={handleOpenWindow} />
+      {/* Navbar - hide when projects or about is open */}
+      {!openWindows.projects && !openWindows.about && <Navbar onOpenWindow={handleOpenWindow} />}
       {/* Main Content */}
       <main>
-        <HeroSection onOpenWindow={handleOpenWindow} />
-        {/* Popups */}
+        {!openWindows.projects && !openWindows.about && <HeroSection onOpenWindow={handleOpenWindow} />}
+        {/* Full Page Sections */}
         {openWindows.about && (
-          <WindowsXPPopup
-            title={windowTitles.about}
-            windowId="About Me"
-            onClose={() => handleCloseWindow("about")}
-          >
-            <AboutSection isPopup />
-          </WindowsXPPopup>
+          <AboutSection onClose={() => handleCloseWindow("about")} />
         )}
-        {openWindows.skills && (
-          <WindowsXPPopup
-            title={windowTitles.skills}
-            windowId="My Skills"
-            onClose={() => handleCloseWindow("skills")}
-          >
-            <SkillsSection isPopup />
-          </WindowsXPPopup>
-        )}
+        {/* Popups */}
         {openWindows.projects && (
           <ProjectsModal
             onClose={() => handleCloseWindow("projects")}

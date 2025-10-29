@@ -1,55 +1,46 @@
 import { X, ExternalLink, Github } from "lucide-react";
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import JsBackground from "./JsBackground";
 import { CustomCloseButton } from "./CustomCloseButton";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-const projects = [
-  {
-    id: 1,
-    title: "SaaS Landing Page",
-    description: "A beautiful landing page app using React and Tailwind.",
-    image: "/projects/project1.png",
-    tags: ["React", "TailwindCSS", "Supabase"],
-    demoUrl: "#",
-    githubUrl: "#",
-    client: "SaaS Startup",
-  },
-  {
-    id: 2,
-    title: "Orbit Analytics Dashboard",
-    description:
-      "Interactive analytics dashboard with data visualization and filtering capabilities.",
-    image: "/projects/project2.png",
-    tags: ["TypeScript", "D3.js", "Next.js"],
-    demoUrl: "#",
-    githubUrl: "#",
-    client: "Tech Company",
-  },
-  {
-    id: 3,
-    title: "E-commerce Platform",
-    description:
-      "Full-featured e-commerce platform with user authentication and payment processing.",
-    image: "/projects/project3.png",
-    tags: ["React", "Node.js", "Stripe"],
-    demoUrl: "#",
-    githubUrl: "#",
-    client: "Retail Brand",
-  },
-];
+// Import JSON files
+import projectsEnJson from "@/projects_data/projects_en.json";
+import projectsFrJson from "@/projects_data/projects_fr.json";
 
-const loremIpsum = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+// Helper function to convert JSON projects to carousel format
+const convertJsonToProjects = (jsonData) => {
+  const projectKeys = ["Scraping-boulanger", "TripHackathon", "ABDD"];
+  const imageMap = {
+    "Scraping-boulanger": "/projects_img/project1.png",
+    "TripHackathon": "/projects_img/project2.png",
+    "ABDD": "/projects_img/project3.png"
+  };
 
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.
-
-Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-
-Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.`;
+  return projectKeys.map((key, index) => {
+    const project = jsonData.projects[key];
+    return {
+      id: index + 1,
+      key: key,
+      title: project.title,
+      description: project.description,
+      image: imageMap[key],
+      tags: project.techStack ? [
+        ...Object.values(project.techStack.frontend || "").filter(Boolean),
+        ...Object.values(project.techStack.backend || "").filter(Boolean),
+        ...(project.techStack.tools ? project.techStack.tools.split(", ").slice(0, 2) : [])
+      ].filter(Boolean).slice(0, 3) : [],
+      demoUrl: project.metadata.liveUrl || "#",
+      githubUrl: project.metadata.githubUrl || "#",
+      client: project.metadata.role || "",
+      fullData: project // Store full project data for detail view
+    };
+  });
+};
 
 // ProjectDetail component
 const ProjectDetail = ({ project, onBack, onClose, scrollToBottom }) => {
+  const { t } = useLanguage();
   const detailRef = useRef(null);
   const contentRef = useRef(null);
   const scrollIndicatorRef = useRef(null);
@@ -149,24 +140,39 @@ const ProjectDetail = ({ project, onBack, onClose, scrollToBottom }) => {
           {/* Project Meta Info */}
           <div className="grid grid-cols-4 gap-8 text-sm mb-16 pb-8 border-b border-white/10">
             <div>
-              <h4 className="text-white/50 uppercase tracking-wider text-xs font-medium mb-2">Agency + Client</h4>
-              <p className="text-white/80">{project.client}</p>
+              <h4 className="text-white/50 uppercase tracking-wider text-xs font-medium mb-2">{t("projectDetail.category")}</h4>
+              <p className="text-white/80">{project.fullData?.metadata?.category || project.client}</p>
             </div>
             <div>
-              <h4 className="text-white/50 uppercase tracking-wider text-xs font-medium mb-2">Role</h4>
-              <p className="text-white/80">{project.tags.join(", ")}</p>
+              <h4 className="text-white/50 uppercase tracking-wider text-xs font-medium mb-2">{t("projectDetail.role")}</h4>
+              <p className="text-white/80">{project.fullData?.metadata?.role || project.tags.join(", ")}</p>
             </div>
             <div>
-              <h4 className="text-white/50 uppercase tracking-wider text-xs font-medium mb-2">Date</h4>
-              <p className="text-white/80">2024</p>
+              <h4 className="text-white/50 uppercase tracking-wider text-xs font-medium mb-2">{t("projectDetail.timeline")}</h4>
+              <p className="text-white/80">{project.fullData?.metadata?.timeline || "2024"}</p>
             </div>
-            <div className="flex items-end">
-              <a
-                href={project.demoUrl}
-                className="px-6 py-3 border border-white/20 text-white hover:bg-white/5 transition-colors text-xs uppercase tracking-wider font-medium"
-              >
-                Launch Site →
-              </a>
+            <div className="flex items-end gap-3">
+              {project.fullData?.metadata?.liveUrl && project.fullData.metadata.liveUrl !== "null" && (
+                <a
+                  href={project.fullData.metadata.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-6 py-3 border border-white/20 text-white hover:bg-white/5 transition-colors text-xs uppercase tracking-wider font-medium"
+                >
+                  {t("projectDetail.liveSite")} →
+                </a>
+              )}
+              {project.fullData?.metadata?.githubUrl && (
+                <a
+                  href={project.fullData.metadata.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-6 py-3 border border-white/20 text-white hover:bg-white/5 transition-colors text-xs uppercase tracking-wider font-medium flex items-center gap-2"
+                >
+                  <Github size={14} />
+                  {t("projectDetail.github")}
+                </a>
+              )}
             </div>
           </div>
         </div>
@@ -185,24 +191,168 @@ const ProjectDetail = ({ project, onBack, onClose, scrollToBottom }) => {
 
             {/* Project Details */}
             <div className="py-12 space-y-12">
-              <div>
-                <h3 className="text-sm font-medium text-white/50 uppercase tracking-wider mb-6">About Project</h3>
-                <div className="text-white/70 leading-relaxed space-y-4 text-lg">
-                  {loremIpsum.split("\n\n").map((paragraph, idx) => (
-                    <p key={idx}>{paragraph}</p>
-                  ))}
+              {/* Overview */}
+              {project.fullData?.overview && (
+                <div>
+                  <h3 className="text-sm font-medium text-white/50 uppercase tracking-wider mb-6">{t("projectDetail.overview")}</h3>
+                  <p className="text-white/70 leading-relaxed text-lg">{project.fullData.overview}</p>
                 </div>
-              </div>
+              )}
+
+              {/* Challenge */}
+              {project.fullData?.challenge && (
+                <div className="py-8 border-t border-white/10">
+                  <h3 className="text-4xl font-light mb-6">{t("projectDetail.challenge")}</h3>
+                  <div className="space-y-4 text-white/70 leading-relaxed text-lg">
+                    {project.fullData.challenge.problem && <p><strong className="text-white/90">{t("projectDetail.problem")}:</strong> {project.fullData.challenge.problem}</p>}
+                    {project.fullData.challenge.goal && <p><strong className="text-white/90">{t("projectDetail.goal")}:</strong> {project.fullData.challenge.goal}</p>}
+                    {project.fullData.challenge.constraints && <p><strong className="text-white/90">{t("projectDetail.constraints")}:</strong> {project.fullData.challenge.constraints}</p>}
+                  </div>
+                </div>
+              )}
+
+              {/* Discovery */}
+              {project.fullData?.discovery && (
+                <div className="py-8 border-t border-white/10">
+                  <h3 className="text-4xl font-light mb-6">Discovery</h3>
+                  <div className="space-y-4 text-white/70 leading-relaxed text-lg">
+                    {project.fullData.discovery.requirements && <p><strong className="text-white/90">Requirements:</strong> {project.fullData.discovery.requirements}</p>}
+                    {project.fullData.discovery.competitiveAnalysis && <p><strong className="text-white/90">Competitive Analysis:</strong> {project.fullData.discovery.competitiveAnalysis}</p>}
+                    {project.fullData.discovery.technicalResearch && <p><strong className="text-white/90">Technical Research:</strong> {project.fullData.discovery.technicalResearch}</p>}
+                  </div>
+                </div>
+              )}
+
+              {/* Architecture */}
+              {project.fullData?.architecture && (
+                <div className="py-8 border-t border-white/10">
+                  <h3 className="text-4xl font-light mb-6">Architecture</h3>
+                  <div className="space-y-4 text-white/70 leading-relaxed text-lg">
+                    {project.fullData.architecture.informationArchitecture && <p><strong className="text-white/90">Information Architecture:</strong> {project.fullData.architecture.informationArchitecture}</p>}
+                    {project.fullData.architecture.technicalDecisions && <p><strong className="text-white/90">Technical Decisions:</strong> {project.fullData.architecture.technicalDecisions}</p>}
+                  </div>
+                </div>
+              )}
+
+              {/* Development Process */}
+              {project.fullData?.developmentProcess && (
+                <div className="py-8 border-t border-white/10">
+                  <h3 className="text-4xl font-light mb-6">{t("projectDetail.developmentProcess")}</h3>
+                  <div className="space-y-4 text-white/70 leading-relaxed text-lg">
+                    {project.fullData.developmentProcess.phase1 && <p><strong className="text-white/90">Phase 1:</strong> {project.fullData.developmentProcess.phase1}</p>}
+                    {project.fullData.developmentProcess.phase2 && <p><strong className="text-white/90">Phase 2:</strong> {project.fullData.developmentProcess.phase2}</p>}
+                    {project.fullData.developmentProcess.phase3 && <p><strong className="text-white/90">Phase 3:</strong> {project.fullData.developmentProcess.phase3}</p>}
+                  </div>
+                </div>
+              )}
+
+              {/* Key Features */}
+              {project.fullData?.keyFeatures && project.fullData.keyFeatures.length > 0 && (
+                <div className="py-8 border-t border-white/10">
+                  <h3 className="text-4xl font-light mb-6">{t("projectDetail.keyFeatures")}</h3>
+                  <div className="space-y-6">
+                    {project.fullData.keyFeatures.map((feature, idx) => (
+                      <div key={idx} className="text-white/70 leading-relaxed text-lg">
+                        {feature.title && <p className="font-semibold text-white/90 mb-2">{feature.title}</p>}
+                        {feature.description && <p>{feature.description}</p>}
+                        {feature.implementation && <p className="mt-2"><strong className="text-white/90">Implementation:</strong> {feature.implementation}</p>}
+                        {feature.challenges && <p className="mt-2"><strong className="text-white/90">Challenges:</strong> {feature.challenges}</p>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Testing */}
+              {project.fullData?.testing && (
+                <div className="py-8 border-t border-white/10">
+                  <h3 className="text-4xl font-light mb-6">Testing</h3>
+                  <p className="text-white/70 leading-relaxed text-lg">{project.fullData.testing}</p>
+                </div>
+              )}
+
+              {/* Tech Stack */}
+              {project.fullData?.techStack && (
+                <div className="py-8 border-t border-white/10">
+                  <h3 className="text-4xl font-light mb-6">{t("projectDetail.techStack")}</h3>
+                  <div className="grid grid-cols-2 gap-6">
+                    {project.fullData.techStack.frontend && project.fullData.techStack.frontend !== "" && (
+                      <div>
+                        <h4 className="text-white/50 uppercase tracking-wider text-xs font-medium mb-3">{t("projectDetail.frontend")}</h4>
+                        <p className="text-white/80">{project.fullData.techStack.frontend}</p>
+                      </div>
+                    )}
+                    {project.fullData.techStack.backend && project.fullData.techStack.backend !== "" && (
+                      <div>
+                        <h4 className="text-white/50 uppercase tracking-wider text-xs font-medium mb-3">{t("projectDetail.backend")}</h4>
+                        <p className="text-white/80">{project.fullData.techStack.backend}</p>
+                      </div>
+                    )}
+                    {project.fullData.techStack.tools && (
+                      <div>
+                        <h4 className="text-white/50 uppercase tracking-wider text-xs font-medium mb-3">{t("projectDetail.tools")}</h4>
+                        <p className="text-white/80">{project.fullData.techStack.tools}</p>
+                      </div>
+                    )}
+                    {project.fullData.techStack.libraries && (
+                      <div>
+                        <h4 className="text-white/50 uppercase tracking-wider text-xs font-medium mb-3">{t("projectDetail.libraries")}</h4>
+                        <p className="text-white/80">{project.fullData.techStack.libraries}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Results Section */}
-              <div className="py-12 border-t border-white/10">
-                <h3 className="text-4xl font-light mb-8">Results</h3>
-                <p className="text-xl font-light leading-relaxed text-white/80">
-                  ah.
-                  Through strategic planning, creative direction, and meticulous execution, we've delivered
-                  a solution that not only meets but exceeds expectations, setting new standards in the industry.
-                </p>
-              </div>
+              {project.fullData?.results && (
+                <div className="py-12 border-t border-white/10">
+                  <h3 className="text-4xl font-light mb-8">{t("projectDetail.results")}</h3>
+                  <div className="space-y-6 text-white/70 leading-relaxed text-lg">
+                    {project.fullData.results.technicalAchievements && (
+                      <p><strong className="text-white/90">{t("projectDetail.technicalAchievements")}:</strong> {project.fullData.results.technicalAchievements}</p>
+                    )}
+                    {project.fullData.results.businessImpact && (
+                      <p><strong className="text-white/90">{t("projectDetail.businessImpact")}:</strong> {project.fullData.results.businessImpact}</p>
+                    )}
+                    {project.fullData.results.personalGrowth && (
+                      <p><strong className="text-white/90">{t("projectDetail.personalGrowth")}:</strong> {project.fullData.results.personalGrowth}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Key Learnings */}
+              {project.fullData?.learnings && project.fullData.learnings.length > 0 && (
+                <div className="py-12 border-t border-white/10">
+                  <h3 className="text-4xl font-light mb-8">{t("projectDetail.keyLearnings")}</h3>
+                  <ul className="space-y-4 text-white/70 leading-relaxed text-lg list-disc list-inside">
+                    {project.fullData.learnings.map((learning, idx) => (
+                      <li key={idx}>{learning}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Future Enhancements */}
+              {project.fullData?.futureEnhancements && project.fullData.futureEnhancements.length > 0 && (
+                <div className="py-12 border-t border-white/10">
+                  <h3 className="text-4xl font-light mb-8">{t("projectDetail.futureEnhancements")}</h3>
+                  <ul className="space-y-4 text-white/70 leading-relaxed text-lg list-disc list-inside">
+                    {project.fullData.futureEnhancements.map((enhancement, idx) => (
+                      <li key={idx}>{enhancement}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Conclusion */}
+              {project.fullData?.conclusion && (
+                <div className="py-12 border-t border-white/10">
+                  <h3 className="text-4xl font-light mb-8">{t("projectDetail.conclusion")}</h3>
+                  <p className="text-white/70 leading-relaxed text-lg">{project.fullData.conclusion}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -239,10 +389,15 @@ const ProjectDetail = ({ project, onBack, onClose, scrollToBottom }) => {
 };
 
 export const ProjectsModal = ({ onClose }) => {
+  const { language } = useLanguage();
   const [showProjectDetail, setShowProjectDetail] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [scrollToBottom, setScrollToBottom] = useState(false);
   const [isCarouselEntering, setIsCarouselEntering] = useState(true);
+
+  // Get projects based on current language
+  const projects = convertJsonToProjects(language === 'fr' ? projectsFrJson : projectsEnJson);
+
   const [carouselItems, setCarouselItems] = useState(() => {
     // Create carousel with 5 copies of the projects for infinite scrolling
     // With 3 projects, this creates 15 items total
@@ -255,6 +410,18 @@ export const ProjectsModal = ({ onClose }) => {
     // Don't rotate - keep original order so items are on both sides
     return items;
   });
+
+  // Update carousel items when language changes
+  useEffect(() => {
+    const newProjects = convertJsonToProjects(language === 'fr' ? projectsFrJson : projectsEnJson);
+    const items = [];
+    for (let i = 0; i < 5; i++) {
+      newProjects.forEach((project) => {
+        items.push({ ...project, carouselId: `${project.id}-${i}` });
+      });
+    }
+    setCarouselItems(items);
+  }, [language]);
 
   const [isClosing, setIsClosing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -269,6 +436,9 @@ export const ProjectsModal = ({ onClose }) => {
 
   const containerRef = useRef(null);
   const trackRef = useRef(null);
+  const lastDragTime = useRef(null);
+  const lastDragPosition = useRef(null);
+  const velocityRef = useRef(0);
 
   const [baseOffset, setBaseOffset] = useState(0);
 
@@ -456,6 +626,9 @@ export const ProjectsModal = ({ onClose }) => {
     setIsDragging(true);
     setDragStart(e.clientX);
     setDragOffset(0);
+    lastDragTime.current = Date.now();
+    lastDragPosition.current = e.clientX;
+    velocityRef.current = 0;
     // immediately scale the current item down for drag feedback
     setAnimStage("scaleDown");
   };
@@ -464,6 +637,16 @@ export const ProjectsModal = ({ onClose }) => {
     if (!isDragging || dragStart === null) return;
     const diff = e.clientX - dragStart;
     setDragOffset(diff);
+
+    // Calculate velocity for momentum
+    const now = Date.now();
+    const timeDelta = now - lastDragTime.current;
+    if (timeDelta > 0 && lastDragPosition.current !== null) {
+      const positionDelta = e.clientX - lastDragPosition.current;
+      velocityRef.current = positionDelta / timeDelta; // pixels per millisecond
+    }
+    lastDragTime.current = now;
+    lastDragPosition.current = e.clientX;
   }, [isDragging, dragStart]);
 
   const handleMouseUp = useCallback(() => {
@@ -474,14 +657,27 @@ export const ProjectsModal = ({ onClose }) => {
     const dragThreshold = 50;
 
     const dragDistance = Math.abs(dragOffset);
-    let itemsToMove = Math.floor(dragDistance / step);
+
+    // Apply momentum: if velocity is high enough, add extra items to move
+    const velocity = velocityRef.current; // pixels per millisecond
+    const momentumThreshold = 0.8; // minimum velocity to trigger momentum (higher = less sensitive)
+    let momentumItems = 0;
+
+    if (Math.abs(velocity) > momentumThreshold) {
+      // Convert velocity to items: higher velocity = more items
+      momentumItems = Math.floor(Math.abs(velocity) * 0.8); // reduced multiplier for less distance
+      momentumItems = Math.min(momentumItems, 2); // cap at 2 extra items (reduced from 3)
+    }
+
+    let itemsToMove = Math.floor(dragDistance / step) + momentumItems;
     if (dragDistance > dragThreshold && itemsToMove === 0) itemsToMove = 1;
 
-    // if not enough drag, just reset scale
-    if (dragDistance <= dragThreshold) {
+    // if not enough drag and no momentum, just reset scale
+    if (dragDistance <= dragThreshold && momentumItems === 0) {
       setAnimStage("idle");
       setDragStart(null);
       setDragOffset(0);
+      velocityRef.current = 0;
       return;
     }
 
@@ -496,52 +692,45 @@ export const ProjectsModal = ({ onClose }) => {
     const center = virtualCenter;
     const totalStep = step * Math.max(1, itemsToMove);
 
-    // direction: dragOffset > 0 => dragged right => move prev; else move next
-    const movingPrev = dragOffset > 0;
+    // direction: use velocity if strong enough, otherwise use dragOffset
+    const movingPrev = Math.abs(velocity) > momentumThreshold ? velocity > 0 : dragOffset > 0;
 
-    // continue the same 3-stage sequence used for arrows
+    // Reset velocity
+    velocityRef.current = 0;
+
+    // Skip scale animations for momentum - go straight to translate for continuous motion
+    setVirtualCenter(movingPrev ? center - itemsToMove : center + itemsToMove);
+    setAnimStage("translating");
+
+    // Clear dragOffset and start translate immediately
+    setDragOffset(0);
+    setTranslateX((prev) => prev + (movingPrev ? totalStep : -totalStep));
+
     setTimeout(() => {
-      // promote the target item visually
-      setVirtualCenter(movingPrev ? center - itemsToMove : center + itemsToMove);
-      setAnimStage("scaleUp");
+      // rotate array by itemsToMove in the correct direction
+      setCarouselItems((prev) => {
+        const newItems = [...prev];
+        if (movingPrev) {
+          for (let i = 0; i < Math.max(1, itemsToMove); i++) {
+            const last = newItems.pop();
+            newItems.unshift(last);
+          }
+        } else {
+          for (let i = 0; i < Math.max(1, itemsToMove); i++) {
+            const first = newItems.shift();
+            newItems.push(first);
+          }
+        }
+        return newItems;
+      });
 
-      setTimeout(() => {
-        // translate by totalStep
-        setAnimStage("translating");
-        // clear any lingering dragOffset so transform animates from the current dragged position
-        const currentDrag = dragOffset;
-        setDragOffset(0);
-        // When clearing dragOffset, we still want to move by totalStep from the current visual position.
-        // Setting translateX by desiredMove will animate from (prev + currentDrag) to (prev + desiredMove).
-        setTranslateX((prev) => prev + (movingPrev ? totalStep : -totalStep));
-
-        setTimeout(() => {
-          // rotate array by itemsToMove in the correct direction
-          setCarouselItems((prev) => {
-            const newItems = [...prev];
-            if (movingPrev) {
-              for (let i = 0; i < Math.max(1, itemsToMove); i++) {
-                const last = newItems.pop();
-                newItems.unshift(last);
-              }
-            } else {
-              for (let i = 0; i < Math.max(1, itemsToMove); i++) {
-                const first = newItems.shift();
-                newItems.push(first);
-              }
-            }
-            return newItems;
-          });
-
-          setTranslateX(0);
-          setVirtualCenter(Math.floor(carouselItems.length / 2));
-          setAnimStage("idle");
-          setIsTransitioning(false);
-          setDragStart(null);
-          setDragOffset(0);
-        }, 800);
-      }, 150);
-    }, 150);
+      setTranslateX(0);
+      setVirtualCenter(Math.floor(carouselItems.length / 2));
+      setAnimStage("idle");
+      setIsTransitioning(false);
+      setDragStart(null);
+      setDragOffset(0);
+    }, 800);
   }, [isDragging, dragOffset, animStage, isTransitioning, virtualCenter, carouselItems.length]);
 
   const handleTransitionEnd = () => {
@@ -580,7 +769,7 @@ export const ProjectsModal = ({ onClose }) => {
     if (isCarouselEntering) {
       const timer = setTimeout(() => {
         setIsCarouselEntering(false);
-      }, 2000); // Match animation duration + stagger
+      }, 1000); // Match animation duration + stagger (reduced from 2000ms)
       return () => clearTimeout(timer);
     }
   }, [isCarouselEntering]);
@@ -659,13 +848,13 @@ export const ProjectsModal = ({ onClose }) => {
             {carouselItems.map((item, idx) => {
               // Calculate stagger delay based on distance from center
               const distanceFromCenter = Math.abs(idx - virtualCenter);
-              const staggerDelay = distanceFromCenter * 0.1; // 100ms per item
+              const staggerDelay = distanceFromCenter * 0.05; // 50ms per item (reduced from 100ms)
 
               // Different animation for center vs side items to match final scales
               const animationStyle = isCarouselEntering
                 ? idx === virtualCenter
-                  ? `imageGrowInCenter 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) ${staggerDelay}s both`
-                  : `imageGrowInSide 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) ${staggerDelay}s both`
+                  ? `imageGrowInCenter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) ${staggerDelay}s both`
+                  : `imageGrowInSide 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) ${staggerDelay}s both`
                 : "none";
 
               return (

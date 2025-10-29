@@ -6,7 +6,6 @@ import { LanguageToggle } from "./LanguageToggle";
 
 const navItems = [
   { name: "about", id: "about" },
-  { name: "skills", id: "skills" },
   { name: "projects", id: "projects" },
   { name: "contact", id: "contact" },
 ];
@@ -28,8 +27,8 @@ export const Navbar = ({ onOpenWindow }) => {
     <nav
       className={cn(
         "fixed w-full z-40 transition-all duration-300 border-b",
-        isScrolled 
-          ? "py-3 bg-background/95 backdrop-blur-md border-gray-800" 
+        isScrolled
+          ? "py-3 bg-background/95 backdrop-blur-md border-gray-800"
           : "py-6 bg-transparent border-transparent"
       )}
     >
@@ -44,7 +43,9 @@ export const Navbar = ({ onOpenWindow }) => {
               onClick={() => onOpenWindow(item.id)}
               className="text-xs font-semibold text-foreground/80 hover:text-primary
                        transition-colors duration-300 uppercase tracking-[0.15em]
-                       hover:tracking-[0.2em] relative pb-2
+                       hover:tracking-[0.2em] relative pb-0.5
+                       before:absolute before:bottom-0 before:left-0 before:w-full before:h-[1px]
+                       before:bg-transparent before:transition-none
                        after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1px]
                        after:bg-primary after:transition-all after:duration-300
                        hover:after:w-full"

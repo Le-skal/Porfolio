@@ -1,13 +1,13 @@
 .custom-close-button {
   position: fixed;
-  top: 1.5rem;
-  right: 1.5rem;
+  top: 1rem;
+  right: 1rem;
   z-index: 9999;
   background: transparent;
   border: none;
-  padding: 0.75rem 1.5rem;
+  padding: 0.5rem 1rem;
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: 0.625rem;
   font-weight: 500;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -17,6 +17,26 @@
   will-change: auto;
   pointer-events: auto;
   opacity: 1;
+}
+
+/* Tablet and up */
+@media (min-width: 640px) {
+  .custom-close-button {
+    top: 1.25rem;
+    right: 1.25rem;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* Desktop and up */
+@media (min-width: 1024px) {
+  .custom-close-button {
+    top: 1.5rem;
+    right: 1.5rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+  }
 }
 
 .custom-close-button.closing {
@@ -69,7 +89,7 @@
   height: 40vh;
   pointer-events: none;
   z-index: 9998;
-  transition: opacity 0.6s ease 0.2s;
+  transition: opacity 0.3s ease;
 }
 
 .cross-container.fade-out {
@@ -84,13 +104,14 @@
 /* Individual cross bars - much longer and larger using percentages */
 .cross-bar {
   position: absolute;
-  width: 35vw;
-  height: 2.5vh;
+  width: 20vw;
+  height: 3vh;
   background-color: rgba(255, 255, 255, 0.9);
   top: 50%;
   left: 50%;
   opacity: 0;
-  transition: opacity 0.3s ease, background-color 0.3s ease;
+  visibility: hidden;
+  transition: opacity 0.4s ease, background-color 0.3s ease;
 }
 
 /* Brighten bars when closing */
@@ -103,57 +124,60 @@
   opacity: 1 !important;
 }
 
-/* First bar (from left, diagonal 45-degree movement) */
+/* First bar - diagonal line at 45deg */
 .cross-bar.bar-1 {
-  /* Anchor the visible right end at the screen center so only the LEFT retracts */
-  transform-origin: 100% 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  clip-path: inset(0 100% 0 0);
 }
 
 .cross-bar.bar-1.animate {
-  animation: slideBar1 0.8s ease-in-out forwards !important;
+  visibility: visible;
+  animation: revealBar1 0.6s ease-out forwards !important;
 }
 
-/* Second bar (from left, diagonal 45-degree movement, delayed) */
+/* Second bar - diagonal line at -45deg */
 .cross-bar.bar-2 {
-  transform-origin: center center;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  clip-path: inset(0 100% 0 0);
 }
 
 .cross-bar.bar-2.animate {
-  animation: slideBar2 0.8s ease-in-out 0.2s forwards !important;
+  visibility: visible;
+  animation: revealBar2 0.6s ease-out 0.15s forwards !important;
 }
 
-/* Animation for first bar - slides diagonally from top-left, then shrinks on left side */
-@keyframes slideBar1 {
-  /* Shooting star: long bar flies in; left tail is off-screen, then tail retracts */
+/* Reveal first bar using clip-path - draws from left to right */
+@keyframes revealBar1 {
   0% {
-    /* Start far off top-left, very long so left end stays off-screen */
-    transform: translate(calc(-50% - 70vw), calc(-50% - 70vh)) rotate(45deg) scaleX(4);
-    opacity: 1;
-  }
-  60% {
-    /* Head reaches center but remains long (tail still off-screen to the left) */
-    transform: translate(-50%, -50%) rotate(45deg) scaleX(4);
+    clip-path: inset(0 100% 0 0);
     opacity: 1;
   }
   100% {
-    /* Retract only the LEFT side to final centered length */
-    transform: translate(-50%, -50%) rotate(45deg) scaleX(1);
+    clip-path: inset(0 0 0 0);
     opacity: 1;
   }
 }
 
-/* Animation for second bar - slides diagonally from bottom-left, then shrinks on left side */
-@keyframes slideBar2 {
+/* Reveal second bar using clip-path - draws from left to right */
+@keyframes revealBar2 {
   0% {
-    transform: translate(calc(-50% - 70vw), calc(-50% + 70vh)) rotate(-45deg) scaleX(4);
+    clip-path: inset(0 100% 0 0);
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+
+/* Fade out animation when hover ends */
+@keyframes fadeOutBar {
+  0% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(0 100% 0 0);
     opacity: 0;
-  }
-  50% {
-    transform: translate(-50%, -50%) rotate(-45deg) scaleX(4);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(-50%, -50%) rotate(-45deg) scaleX(1);
-    opacity: 1;
   }
 }

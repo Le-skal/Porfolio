@@ -1,8 +1,9 @@
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState, useEffect } from "react";
+import TextType from "@/components/TextType";
 
 export const HeroSection = ({ onOpenWindow }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [showHero, setShowHero] = useState(true);
 
   // Listen for popup opens to hide hero
@@ -25,7 +26,7 @@ export const HeroSection = ({ onOpenWindow }) => {
       window.removeEventListener('popupClose', handlePopupClose);
     };
   }, []);
-  
+
   return (
     <section
       id="hero"
@@ -36,9 +37,16 @@ export const HeroSection = ({ onOpenWindow }) => {
           <div className="space-y-12 animate-text-fade">
             {/* Main heading */}
             <div className="space-y-6">
-              <h1 className="text-5xl md:text-7xl lg:text-8xl font-light tracking-tight leading-tight">
-                {t("hero.greeting")}
-              </h1>
+              <TextType
+                as="h1"
+                text={[t("hero.greeting")]}
+                typingSpeed={75}
+                pauseDuration={1500}
+                showCursor={true}
+                cursorCharacter="|"
+                className="text-5xl md:text-7xl lg:text-8xl font-light tracking-tight leading-tight"
+              />
+
               <h2 className="text-4xl md:text-6xl lg:text-7xl font-semibold tracking-tight">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-purple-400 to-pink-400">
                   {t("hero.name")} {t("hero.lastname")}
@@ -51,26 +59,35 @@ export const HeroSection = ({ onOpenWindow }) => {
               {t("hero.description")}
             </p>
 
-            {/* CTA Buttons */}
+            {/* CTA Buttons: CV (language-aware) and GitHub */}
             <div className="pt-8 flex flex-col sm:flex-row gap-6 justify-center items-center">
-              <button 
-                onClick={() => onOpenWindow && onOpenWindow('projects')}
+              {/* CV link - uses language from context to pick EN/FR PDF in /cv/ */}
+              <a
+                href={language === 'fr' ? '/cv/raphael_martin_cv_fr.pdf' : '/cv/raphael_martin_cv_en.pdf'}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="px-8 py-3 md:px-10 md:py-3 bg-primary text-primary-foreground font-semibold
                          transition-all duration-300 uppercase tracking-widest text-xs
                          border border-primary hover:bg-transparent hover:text-primary
                          hover:shadow-[0_0_20px_rgba(168,85,247,0.3)]"
+                aria-label={t("hero.cv")}
               >
-                {t("hero.cta")}
-              </button>
-              <button 
-                onClick={() => onOpenWindow && onOpenWindow('contact')}
+                {t("hero.cv")}
+              </a>
+
+              {/* GitHub link - replace with your username */}
+              <a
+                href="https://github.com/Le-skal"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="px-8 py-3 md:px-10 md:py-3 bg-transparent text-foreground font-semibold
                          transition-all duration-300 uppercase tracking-widest text-xs
                          border border-foreground/30 hover:border-foreground
                          hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                aria-label="GitHub"
               >
-                {t("contact.title")}
-              </button>
+                GitHub
+              </a>
             </div>
           </div>
         )}

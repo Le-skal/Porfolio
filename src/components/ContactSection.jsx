@@ -18,20 +18,56 @@ export const ContactSection = ({ isPopup }) => {
   const { t } = useLanguage();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      toast({
-        title: t("contact.messageSent"),
-        description: t("contact.messageSentDesc"),
+    const formData = new FormData(e.target);
+    const name = formData.get('name');
+    const email = formData.get('email');
+    const message = formData.get('message');
+
+    // Use localhost for local dev, relative path for Vercel
+    const apiUrl = import.meta.env.DEV
+      ? 'http://localhost:3001/api/send-email'
+      : '/api/send-email';
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, message }),
       });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: t("contact.messageSent"),
+          description: t("contact.messageSentDesc"),
+        });
+        e.target.reset(); // Clear form
+      } else {
+        toast({
+          title: "Error",
+          description: data.error || "Failed to send message",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error sending email:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsSubmitting(false);
-    }, 1500);
+    }
   };
-  
+
   return (
     <section id="contact" className={isPopup ? "w-full" : "py-24 px-4 relative"}>
       <div className={isPopup ? "w-full" : "container mx-auto max-w-5xl"}>
@@ -63,11 +99,11 @@ export const ContactSection = ({ isPopup }) => {
             )}
 
             <div className={isPopup ? "space-y-2" : "space-y-4"}>
-              <div className={isPopup ? "flex items-center gap-2" : "flex items-start space-x-4"}>
+              <div className="flex items-start gap-2">
                 <div className={isPopup ? "p-1 bg-gray-300 rounded-sm flex-shrink-0" : "p-2 bg-primary/10 rounded-sm flex-shrink-0"}>
                   <Mail className={isPopup ? "h-4 w-4 text-gray-700" : "h-5 w-5 text-primary"} />
                 </div>
-                <div>
+                <div className="text-left">
                   <h4 className={isPopup ? "font-semibold text-xs text-gray-800" : "font-semibold text-xs uppercase tracking-wide mb-1"}>
                     {t("contact.email")}
                   </h4>
@@ -80,11 +116,11 @@ export const ContactSection = ({ isPopup }) => {
                 </div>
               </div>
 
-              <div className={isPopup ? "flex items-center gap-2" : "flex items-start space-x-4"}>
+              <div className="flex items-start gap-2">
                 <div className={isPopup ? "p-1 bg-gray-300 rounded-sm flex-shrink-0" : "p-2 bg-primary/10 rounded-sm flex-shrink-0"}>
                   <Phone className={isPopup ? "h-4 w-4 text-gray-700" : "h-5 w-5 text-primary"} />
                 </div>
-                <div>
+                <div className="text-left">
                   <h4 className={isPopup ? "font-semibold text-xs text-gray-800" : "font-semibold text-xs uppercase tracking-wide mb-1"}>
                     {t("contact.phone")}
                   </h4>
@@ -97,11 +133,11 @@ export const ContactSection = ({ isPopup }) => {
                 </div>
               </div>
 
-              <div className={isPopup ? "flex items-center gap-2" : "flex items-start space-x-4"}>
+              <div className="flex items-start gap-2">
                 <div className={isPopup ? "p-1 bg-gray-300 rounded-sm flex-shrink-0" : "p-2 bg-primary/10 rounded-sm flex-shrink-0"}>
                   <MapPin className={isPopup ? "h-4 w-4 text-gray-700" : "h-5 w-5 text-primary"} />
                 </div>
-                <div>
+                <div className="text-left">
                   <h4 className={isPopup ? "font-semibold text-xs text-gray-800" : "font-semibold text-xs uppercase tracking-wide mb-1"}>
                     {t("contact.location")}
                   </h4>
@@ -137,10 +173,10 @@ export const ContactSection = ({ isPopup }) => {
             </h3>
 
             <form className={isPopup ? "space-y-2" : "space-y-4"} onSubmit={handleSubmit}>
-              <div>
+              <div className="text-left">
                 <label
                   htmlFor="name"
-                  className={isPopup ? "block text-xs font-semibold text-gray-800 mb-1" : "block text-xs font-semibold uppercase tracking-wider mb-2"}
+                  className={isPopup ? "block text-xs font-semibold text-gray-800 mb-1 text-left" : "block text-xs font-semibold uppercase tracking-wider mb-2"}
                 >
                   {t("contact.yourName")}
                 </label>
@@ -149,15 +185,15 @@ export const ContactSection = ({ isPopup }) => {
                   id="name"
                   name="name"
                   required
-                  className={isPopup ? "w-full px-2 py-1 text-xs bg-gray-100 border border-gray-400 focus:border-gray-500 focus:outline-none" : "w-full px-3 py-2 text-sm bg-background border border-foreground/10 focus:border-primary focus:outline-none transition-colors"}
+                  className={isPopup ? "w-full px-2 py-1 text-xs bg-gray-100 border border-gray-400 focus:border-gray-500 focus:outline-none text-left" : "w-full px-3 py-2 text-sm bg-background border border-foreground/10 focus:border-primary focus:outline-none transition-colors"}
                   placeholder={t("contact.namePlaceholder")}
                 />
               </div>
 
-              <div>
+              <div className="text-left">
                 <label
                   htmlFor="email"
-                  className={isPopup ? "block text-xs font-semibold text-gray-800 mb-1" : "block text-xs font-semibold uppercase tracking-wider mb-2"}
+                  className={isPopup ? "block text-xs font-semibold text-gray-800 mb-1 text-left" : "block text-xs font-semibold uppercase tracking-wider mb-2"}
                 >
                   {t("contact.yourEmail")}
                 </label>
@@ -166,15 +202,15 @@ export const ContactSection = ({ isPopup }) => {
                   id="email"
                   name="email"
                   required
-                  className={isPopup ? "w-full px-2 py-1 text-xs bg-gray-100 border border-gray-400 focus:border-gray-500 focus:outline-none" : "w-full px-3 py-2 text-sm bg-background border border-foreground/10 focus:border-primary focus:outline-none transition-colors"}
+                  className={isPopup ? "w-full px-2 py-1 text-xs bg-gray-100 border border-gray-400 focus:border-gray-500 focus:outline-none text-left" : "w-full px-3 py-2 text-sm bg-background border border-foreground/10 focus:border-primary focus:outline-none transition-colors"}
                   placeholder={t("contact.emailPlaceholder")}
                 />
               </div>
 
-              <div>
+              <div className="text-left">
                 <label
                   htmlFor="message"
-                  className={isPopup ? "block text-xs font-semibold text-gray-800 mb-1" : "block text-xs font-semibold uppercase tracking-wider mb-2"}
+                  className={isPopup ? "block text-xs font-semibold text-gray-800 mb-1 text-left" : "block text-xs font-semibold uppercase tracking-wider mb-2"}
                 >
                   {t("contact.yourMessage")}
                 </label>
@@ -182,7 +218,7 @@ export const ContactSection = ({ isPopup }) => {
                   id="message"
                   name="message"
                   required
-                  className={isPopup ? "w-full px-2 py-1 text-xs bg-gray-100 border border-gray-400 focus:border-gray-500 focus:outline-none resize-none h-16" : "w-full px-3 py-2 text-sm bg-background border border-foreground/10 focus:border-primary focus:outline-none transition-colors resize-none h-24"}
+                  className={isPopup ? "w-full px-2 py-1 text-xs bg-gray-100 border border-gray-400 focus:border-gray-500 focus:outline-none resize-none h-16 text-left" : "w-full px-3 py-2 text-sm bg-background border border-foreground/10 focus:border-primary focus:outline-none transition-colors resize-none h-24"}
                   placeholder={t("contact.messagePlaceholder")}
                 />
               </div>
