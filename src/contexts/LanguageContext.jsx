@@ -82,7 +82,7 @@ export const translations = {
       messageSent: "Message sent!",
       messageSentDesc: "Thank you for your message. I'll get back to you soon.",
       // Confirmation email templates (used when sending confirmation to user)
-      confirmationSubject: "Thank you for contacting me, {name}!",
+      confirmationSubject: "Portfolio contact: {name}!",
       confirmationGreeting: "Hi {name},",
       confirmationReceivedLine: "Your message has been received",
       confirmationBody: "Thank you for reaching out! I've received your message and will get back to you as soon as possible.",
@@ -196,7 +196,7 @@ export const translations = {
       messageSentDesc:
         "Merci pour votre message. Je vous répondrai bientôt.",
       // Confirmation email templates (used when sending confirmation to user)
-      confirmationSubject: "Merci pour votre message, {name} !",
+      confirmationSubject: "Portfolio contact: {name}!",
       confirmationGreeting: "Bonjour {name},",
       confirmationReceivedLine: "Votre message a bien été reçu",
       confirmationBody: "Merci pour votre message ! Je l'ai bien reçu et je reviendrai vers vous dès que possible.",

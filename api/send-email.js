@@ -32,8 +32,8 @@ export default async function handler(req, res) {
             day: 'numeric'
         });
 
-        // Beautiful HTML email template inspired by test.html
-        const htmlContent = `
+  // Helper to produce a header (includes big headline and optional subtitle) and footer for the beautiful template.
+  const makeHeader = (headline, subtitle = '') => `
       <!DOCTYPE html>
       <html>
       <head>
@@ -59,21 +59,18 @@ export default async function handler(req, res) {
                             </tr>
                             <tr>
                               <td style="font-family:Georgia,'Times New Roman',serif;font-size:42px;font-weight:700;letter-spacing:-0.5px;line-height:1.1;color:#2d6a4f;text-align:center">
-                                Portfolio Contact
+                                ${headline}
                               </td>
                             </tr>
+                            ${subtitle ? `
                             <tr>
                               <td style="padding-top:6px;font-family:Georgia,'Times New Roman',serif;font-size:13px;font-style:italic;color:#666;letter-spacing:0.3px;text-align:center">
-                                New message from your portfolio website
+                                ${subtitle}
                               </td>
                             </tr>
+                            ` : ''}
                           </tbody>
                         </table>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="padding-top:12px;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#666;text-align:center">
-                        <span style="font-weight:600;color:#2d6a4f">NEW INQUIRY</span>
                       </td>
                     </tr>
                   </tbody>
@@ -81,6 +78,35 @@ export default async function handler(req, res) {
               </td>
             </tr>
 
+            <!-- Content placeholder (we will inject innerHtml here) -->
+`;
+
+        const makeFooter = () => `
+            <!-- Footer -->
+            <tr>
+              <td style="padding:20px 30px;background:#fafaf8;border-top:3px double #2d6a4f;text-align:center">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                  <tbody>
+                    <tr>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#999;line-height:1.6;text-align:center">
+                        © ${new Date().getFullYear()} Portfolio · All rights reserved
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `;
+
+  // Helper to wrap an inner HTML fragment into the full template and optionally set the headline + subtitle
+  const wrapInTemplate = (innerHtml, headline = 'Portfolio Contact', subtitle = '') => makeHeader(headline, subtitle) + innerHtml + makeFooter();
+
+        // Owner inner content (message/details) - this remains the detailed message section
+        const ownerInner = `
             <!-- Contact Info Section -->
             <tr>
               <td style="padding:20px 30px;background:#fafaf8;border-bottom:1px solid #e0e0e0">
@@ -143,57 +169,68 @@ export default async function handler(req, res) {
                 </table>
               </td>
             </tr>
+`;
 
-            <!-- Footer -->
-            <tr>
-              <td style="padding:20px 30px;background:#fafaf8;border-top:3px double #2d6a4f;text-align:center">
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                  <tbody>
-                    <tr>
-                      <td style="padding-bottom:8px;font-family:Georgia,'Times New Roman',serif;font-size:13px;color:#333">
-                        This message was sent via your portfolio contact form
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#999;line-height:1.6">
-                        Â© ${new Date().getFullYear()} Portfolio Â· All rights reserved
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </body>
-      </html>
-    `;
-
-        // Email to you (portfolio owner)
+        // Email to you (portfolio owner) - use the ownerInner wrapped in the template
         const mailToOwner = {
             from: process.env.GMAIL_USER,
             to: process.env.GMAIL_USER,
             replyTo: email,
             subject: `Portfolio Contact: ${name}`,
-            html: htmlContent,
+            html: wrapInTemplate(ownerInner),
         };
 
-        // If the client provided a subject and HTML body, use them (they are localized by the front-end)
+  // Log received language and a short request preview for debugging
+  console.log('[send-email] received language:', language);
+  // Normalize language to `en` or `fr` for headline/subtitle maps
+  const shortLang = (language || 'en').toString().slice(0, 2).toLowerCase() === 'fr' ? 'fr' : 'en';
+
+  const headlineMap = { en: 'Thank You!', fr: 'Merci !' };
+  const subtitleMap = { en: 'Your message has been received', fr: 'Votre message a bien été reçu' };
+  // If the client provided a subject and HTML body, use them (they are localized by the front-end)
+        // but wrap them in the same beautiful template so the sender receives the preferred layout.
         let mailToSender;
         if (providedSubject && providedHtml) {
-            mailToSender = {
-                from: process.env.GMAIL_USER,
-                to: email,
-                subject: providedSubject,
-                html: providedHtml,
-            };
+            // providedHtml is expected to be a fragment representing the confirmation message body (from LanguageContext)
+            // We'll inject it as the inner content so the header/footer remain consistent with owner email.
+            // Log a short preview for debugging (safe: not logging full PII)
+            console.log('[send-email] Using client-provided subject/html for confirmation. subject:', providedSubject);
+            console.log('[send-email] providedHtml preview:', providedHtml?.slice(0, 200));
+
+            // Sanitize the provided HTML so the server-controlled big header (Thank You! / Merci !) is shown
+            // Remove any top-level heading tags that the client fragment might have inserted and strip
+            // direct occurrences of the providedSubject (so it doesn't appear twice as the headline).
+            let safeHtml = String(providedHtml || '');
+            try {
+                // Remove any <h1>..</h1> .. <h6>..</h6> tags
+                safeHtml = safeHtml.replace(/<h[1-6][\s\S]*?>[\s\S]*?<\/h[1-6]>/gi, '');
+                // Remove the providedSubject if present (escape for regex)
+                if (providedSubject) {
+                    const esc = providedSubject.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const re = new RegExp(esc, 'gi');
+                    safeHtml = safeHtml.replace(re, '');
+                }
+                // Trim leftover empty tags or excessive whitespace at the start
+                safeHtml = safeHtml.replace(/^\s+/, '');
+            } catch (e) {
+                console.warn('[send-email] HTML sanitization failed, using original providedHtml', e);
+                safeHtml = providedHtml;
+            }
+
+      // Use a short static headline + subtitle based on language for the big header (don't use full subject as headline)
+      mailToSender = {
+        from: process.env.GMAIL_USER,
+        to: email,
+        subject: providedSubject,
+        html: wrapInTemplate(safeHtml, headlineMap[shortLang], subtitleMap[shortLang]),
+      };
         } else {
             // Fallback: use simple English default templates
             mailToSender = {
                 from: process.env.GMAIL_USER,
                 to: email,
                 subject: `Thank you for contacting me, ${name}!`,
-                html: `<p>Hi ${name},</p><p>Thank you for reaching out! I've received your message and will get back to you as soon as possible.</p><p>Best regards,<br/>Raphaël Martin</p>`,
+                html: wrapInTemplate(`<tr><td style="padding:30px 30px"><p>Hi ${name},</p><p>Thank you for reaching out! I've received your message and will get back to you as soon as possible.</p><p>Best regards,<br/>Raphaël Martin</p></td></tr>`),
             };
         }
 

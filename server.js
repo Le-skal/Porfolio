@@ -23,7 +23,14 @@ app.post('/api/send-email', async (req, res) => {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    try {
+  try {
+    console.log('[local-api] incoming /api/send-email request body preview:', {
+      name: req.body.name,
+      email: req.body.email,
+      language: req.body.language,
+      hasSubject: !!req.body.subject,
+      hasHtml: !!req.body.html,
+    });
         // Create transporter using Gmail
         const transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -117,23 +124,15 @@ app.post('/api/send-email', async (req, res) => {
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                   <tbody>
                     <tr>
-                      <td style="padding:0 0 18px 0">
-                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">
-                          <tbody>
-                            <tr>
-                              <td style="border-top:2px solid #1b1b1b;height:0;font-size:0;line-height:0">&nbsp;</td>
-                            </tr>
-                            <tr>
-                              <td style="padding:10px 0 6px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#1b1b1b">
-                                Message
-                              </td>
-                            </tr>
-                            <tr>
-                              <td style="border-bottom:1px solid #d8d2c7;height:0;font-size:0;line-height:0">&nbsp;</td>
-                            </tr>
-                          </tbody>
-                        </table>
+                      <td style="border-top:2px solid #1b1b1b;height:0;font-size:0;line-height:0">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:10px 0 6px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#1b1b1b">
+                        Message
                       </td>
+                    </tr>
+                    <tr>
+                      <td style="border-bottom:1px solid #d8d2c7;height:0;font-size:0;line-height:0">&nbsp;</td>
                     </tr>
                     <tr>
                       <td style="padding:16px 0 18px 0">
@@ -158,11 +157,6 @@ app.post('/api/send-email', async (req, res) => {
               <td style="padding:20px 30px;background:#fafaf8;border-top:3px double #2d6a4f;text-align:center">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                   <tbody>
-                    <tr>
-                      <td style="padding-bottom:8px;font-family:Georgia,'Times New Roman',serif;font-size:13px;color:#333">
-                        This message was sent via your portfolio contact form
-                      </td>
-                    </tr>
                     <tr>
                       <td style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#999;line-height:1.6">
                         © ${new Date().getFullYear()} Portfolio · All rights reserved
@@ -248,10 +242,11 @@ app.post('/api/send-email', async (req, res) => {
       `,
         };
 
-        // Override with localized subject/body based on site language
-        try {
-            const lang = (language || 'en').toString().toLowerCase();
-            const effectiveLang = lang === 'en' ? 'fr' : lang; // enforce FR when site is EN
+    // Override with localized subject/body based on site language
+    try {
+      const lang = (language || 'en').toString().toLowerCase();
+      // Respect the client's language: if it's 'fr' use French, otherwise default to English
+      const effectiveLang = lang === 'fr' ? 'fr' : 'en';
 
             const senderSubjects = {
                 en: `Thank you for contacting me, ${name}!`,
@@ -369,12 +364,111 @@ app.post('/api/send-email', async (req, res) => {
       `
             };
 
-            mailToSender = {
-                from: process.env.GMAIL_USER,
-                to: email,
-                subject: senderSubjects[effectiveLang] || senderSubjects.en,
-                html: senderBodies[effectiveLang] || senderBodies.en,
-            };
+      // If client provided a subject and HTML fragment, use it (and keep the beautiful layout)
+      if (req.body.subject && req.body.html) {
+        console.log('[local-api] using client-provided subject/html for confirmation');
+                // Build a lightweight template header/footer and wrap the provided fragment so layout matches
+                const date = new Date().toLocaleDateString(effectiveLang === 'fr' ? 'fr-FR' : 'en-US', {
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+                });
+                // Use a fixed short headline for the big header (do not use the full subject here)
+                const headline = (effectiveLang === 'fr' ? 'Merci !' : 'Thank You!');
+                const subtitle = (effectiveLang === 'fr' ? 'Votre message a bien été reçu' : 'Your message has been received');
+                const header = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin:0;padding:20px;background:#f5f5f5;font-family:Arial,sans-serif">
+          <table role="presentation" width="700" cellpadding="0" cellspacing="0" style="width:700px;max-width:700px;background:#ffffff;margin:0 auto">
+            <tbody>
+              <tr>
+                <td style="padding:24px 30px 20px 30px;background:#ffffff;border-bottom:4px double #2d6a4f">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                    <tbody>
+                      <tr>
+                        <td style="padding-bottom:12px;border-bottom:1px solid #2d6a4f">
+                          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                            <tbody>
+                              <tr>
+                                <td style="padding-bottom:8px;font-family:Georgia,'Times New Roman',serif;font-size:11px;font-weight:400;text-transform:uppercase;letter-spacing:1px;color:#666;text-align:center">
+                                  ${date}
+                                </td>
+                              </tr>
+                              <tr>
+                                <td style="font-family:Georgia,'Times New Roman',serif;font-size:42px;font-weight:700;letter-spacing:-0.5px;line-height:1.1;color:#2d6a4f;text-align:center">
+                                  ${headline}
+                                </td>
+                              </tr>
+                              <tr>
+                                <td style="padding-top:6px;font-family:Georgia,'Times New Roman',serif;font-size:13px;font-style:italic;color:#666;letter-spacing:0.3px;text-align:center">
+                                  ${subtitle}
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+`;
+                const footer = `
+              <tr>
+                <td style="padding:20px 30px;background:#fafaf8;border-top:3px double #2d6a4f;text-align:center">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                    <tbody>
+                      <tr>
+                        <td style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#999;line-height:1.6;text-align:center">
+                          © ${new Date().getFullYear()} Portfolio · All rights reserved
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `;
+
+        // Sanitize the provided HTML so the server-controlled big header (Merci!/Thank You!) is shown
+        let safeHtml = String(req.body.html || '');
+        try {
+          // Remove any <h1>..</h1> .. <h6>..</h6> tags that the client may have inserted
+          safeHtml = safeHtml.replace(/<h[1-6][\s\S]*?>[\s\S]*?<\/h[1-6]>/gi, '');
+          // Remove occurrences of the subject to avoid duplicating it as the headline
+          if (req.body.subject) {
+            const esc = req.body.subject.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const re = new RegExp(esc, 'gi');
+            safeHtml = safeHtml.replace(re, '');
+          }
+          safeHtml = safeHtml.replace(/^\s+/, '');
+        } catch (e) {
+          console.warn('[local-api] HTML sanitization failed, using original provided html', e);
+          safeHtml = req.body.html;
+        }
+
+    mailToSender = {
+          from: process.env.GMAIL_USER,
+          to: email,
+          subject: req.body.subject,
+          html: header + safeHtml + footer,
+        };
+    console.log('[local-api] confirmation subject:', req.body.subject);
+    console.log('[local-api] provided html preview (sanitized):', String(safeHtml).slice(0, 200));
+      } else {
+                mailToSender = {
+                    from: process.env.GMAIL_USER,
+                    to: email,
+                    subject: senderSubjects[effectiveLang] || senderSubjects.en,
+                    html: senderBodies[effectiveLang] || senderBodies.en,
+                };
+            }
         } catch {}
 
         // Send both emails

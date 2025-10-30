@@ -55,55 +55,10 @@ export const ContactSection = ({ isPopup }) => {
       const siteTitle = t('contact.title') || 'Portfolio Contact';
       const siteSubtitle = t('contact.subtitle') || '';
 
-      const emailHtml = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="margin:0;padding:20px;background:#f5f5f5;font-family:Arial,sans-serif">
-        <table role="presentation" width="700" cellpadding="0" cellspacing="0" style="width:700px;max-width:700px;background:#ffffff;margin:0 auto">
-          <tbody>
-            <!-- Header -->
-            <tr>
-              <td style="padding:24px 30px 20px 30px;background:#ffffff;border-bottom:4px double #2d6a4f">
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                  <tbody>
-                    <tr>
-                      <td style="padding-bottom:12px;border-bottom:1px solid #2d6a4f">
-                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                          <tbody>
-                            <tr>
-                              <td style="padding-bottom:8px;font-family:Georgia,'Times New Roman',serif;font-size:11px;font-weight:400;text-transform:uppercase;letter-spacing:1px;color:#666;text-align:center">
-                                ${date}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td style="font-family:Georgia,'Times New Roman',serif;font-size:42px;font-weight:700;letter-spacing:-0.5px;line-height:1.1;color:#2d6a4f;text-align:center">
-                                ${siteTitle}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td style="padding-top:6px;font-family:Georgia,'Times New Roman',serif;font-size:13px;font-style:italic;color:#666;letter-spacing:0.3px;text-align:center">
-                                ${siteSubtitle}
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="padding-top:12px;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#666;text-align:center">
-                        <span style="font-weight:600;color:#2d6a4f">${t('contact.contactInfo') || 'NEW INQUIRY'}</span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </td>
-            </tr>
-
-            <!-- Message Body -->
+      // Build only the inner fragment (not a full HTML document). The server will wrap this fragment
+      // inside the shared header/footer template so both owner and sender emails keep consistent layout.
+      const emailInner = `
+            <!-- Message Body (client confirmation fragment) -->
             <tr>
               <td style="padding:30px;background:#fafaf8">
                 <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#333;margin:0 0 16px 0">${greeting}</p>
@@ -112,32 +67,16 @@ export const ContactSection = ({ isPopup }) => {
               </td>
             </tr>
 
-            <!-- Footer -->
-            <tr>
-              <td style="padding:20px 30px;background:#fafaf8;border-top:3px double #2d6a4f;text-align:center">
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                  <tbody>
-                    <tr>
-                      <td style="padding-bottom:8px;font-family:Georgia,'Times New Roman',serif;font-size:13px;color:#333">
-                        ${t('contact.messageSentDesc') || ''}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#999;line-height:1.6">
-                        © ${new Date().getFullYear()} Portfolio · All rights reserved
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </body>
-      </html>
+            <!-- Note: footer will be added by server template -->
       `;
 
-      const payload = { name, email, message, language, subject, html: emailHtml };
+  // Add a quick debug preview to help troubleshoot language/template issues in production logs
+  console.log('[ContactSection] language:', language);
+  console.log('[ContactSection] t(contact.confirmationSubject):', t('contact.confirmationSubject'));
+  console.log('[ContactSection] t(contact.confirmationGreeting):', t('contact.confirmationGreeting'));
+  console.log('[ContactSection] sending subject:', subject);
+  console.log('[ContactSection] html preview:', emailInner.slice(0, 200));
+      const payload = { name, email, message, language, subject, html: emailInner };
 
       const response = await fetch(apiUrl, {
         method: 'POST',
