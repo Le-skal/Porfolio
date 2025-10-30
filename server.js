@@ -16,7 +16,7 @@ app.use(express.json());
 
 // Email endpoint
 app.post('/api/send-email', async (req, res) => {
-    const { name, email, message } = req.body;
+    const { name, email, message, language } = req.body;
 
     // Validate input
     if (!name || !email || !message) {
@@ -187,8 +187,8 @@ app.post('/api/send-email', async (req, res) => {
             html: htmlContent,
         };
 
-        // Confirmation email to sender
-        const mailToSender = {
+        // Confirmation email to sender (default EN, will override below)
+        let mailToSender = {
             from: process.env.GMAIL_USER,
             to: email,
             subject: `Thank you for contacting me, ${name}!`,
@@ -247,6 +247,135 @@ app.post('/api/send-email', async (req, res) => {
         </html>
       `,
         };
+
+        // Override with localized subject/body based on site language
+        try {
+            const lang = (language || 'en').toString().toLowerCase();
+            const effectiveLang = lang === 'en' ? 'fr' : lang; // enforce FR when site is EN
+
+            const senderSubjects = {
+                en: `Thank you for contacting me, ${name}!`,
+                fr: `Merci de m'avoir contacté, ${name} !`
+            };
+
+            const senderBodies = {
+                en: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin:0;padding:20px;background:#f5f5f5;font-family:Arial,sans-serif">
+          <table role="presentation" width="700" cellpadding="0" cellspacing="0" style="width:700px;max-width:700px;background:#ffffff;margin:0 auto">
+            <tbody>
+              <tr>
+                <td style="padding:24px 30px 20px 30px;background:#ffffff;border-bottom:4px double #2d6a4f">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                    <tbody>
+                      <tr>
+                        <td style="font-family:Georgia,'Times New Roman',serif;font-size:36px;font-weight:700;letter-spacing:-0.5px;line-height:1.1;color:#2d6a4f;text-align:center">
+                          Thank You!
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-top:6px;font-family:Georgia,'Times New Roman',serif;font-size:13px;font-style:italic;color:#666;letter-spacing:0.3px;text-align:center">
+                          Your message has been received
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:30px;background:#fafaf8">
+                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#333;margin:0 0 16px 0">
+                    Hi ${name},
+                  </p>
+                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#333;margin:0 0 16px 0">
+                    Thank you for reaching out! I've received your message and will get back to you as soon as possible.
+                  </p>
+                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#333;margin:0">
+                    Best regards,<br>
+                    <strong style="color:#2d6a4f">Raphaël Martin</strong>
+                  </p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:20px 30px;background:#fafaf8;border-top:3px double #2d6a4f;text-align:center">
+                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#999;margin:0">
+                    © ${new Date().getFullYear()} Portfolio · All rights reserved
+                  </p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `,
+                fr: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin:0;padding:20px;background:#f5f5f5;font-family:Arial,sans-serif">
+          <table role="presentation" width="700" cellpadding="0" cellspacing="0" style="width:700px;max-width:700px;background:#ffffff;margin:0 auto">
+            <tbody>
+              <tr>
+                <td style="padding:24px 30px 20px 30px;background:#ffffff;border-bottom:4px double #2d6a4f">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                    <tbody>
+                      <tr>
+                        <td style="font-family:Georgia,'Times New Roman',serif;font-size:36px;font-weight:700;letter-spacing:-0.5px;line-height:1.1;color:#2d6a4f;text-align:center">
+                          Merci !
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-top:6px;font-family:Georgia,'Times New Roman',serif;font-size:13px;font-style:italic;color:#666;letter-spacing:0.3px;text-align:center">
+                          Votre message a bien été reçu
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:30px;background:#fafaf8">
+                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#333;margin:0 0 16px 0">
+                    Bonjour ${name},
+                  </p>
+                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#333;margin:0 0 16px 0">
+                    Merci pour votre message ! Je l'ai bien reçu et je reviendrai vers vous dès que possible.
+                  </p>
+                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#333;margin:0">
+                    Cordialement,<br>
+                    <strong style="color:#2d6a4f">Raphaël Martin</strong>
+                  </p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:20px 30px;background:#fafaf8;border-top:3px double #2d6a4f;text-align:center">
+                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#999;margin:0">
+                    © ${new Date().getFullYear()} Portfolio · Tous droits réservés
+                  </p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `
+            };
+
+            mailToSender = {
+                from: process.env.GMAIL_USER,
+                to: email,
+                subject: senderSubjects[effectiveLang] || senderSubjects.en,
+                html: senderBodies[effectiveLang] || senderBodies.en,
+            };
+        } catch {}
 
         // Send both emails
         await Promise.all([

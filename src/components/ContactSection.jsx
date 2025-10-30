@@ -15,7 +15,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 export const ContactSection = ({ isPopup }) => {
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -33,12 +33,118 @@ export const ContactSection = ({ isPopup }) => {
       : '/api/send-email';
 
     try {
+      // Build localized confirmation subject and HTML using translations
+      const subjectTemplate = t('contact.confirmationSubject') || 'Thank you for contacting me, {name}!';
+      const greeting = (t('contact.confirmationGreeting') || `Hi ${name},`).replace('{name}', name);
+      const receivedLine = t('contact.confirmationReceivedLine') || 'Your message has been received';
+      const bodyLine = t('contact.confirmationBody') || "Thank you for reaching out! I've received your message and will get back to you as soon as possible.";
+      const signatureRaw = t('contact.confirmationSignature') || 'Best regards,\nRaphaël Martin';
+      const signature = signatureRaw.replace(/\n/g, '<br>');
+
+      const subject = subjectTemplate.replace('{name}', name);
+
+      // Build rich HTML similar to owner's template but using localized strings
+      const locale = (language || 'en').slice(0, 2).toLowerCase() === 'fr' ? 'fr-FR' : 'en-US';
+      const date = new Date().toLocaleDateString(locale, {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      const siteTitle = t('contact.title') || 'Portfolio Contact';
+      const siteSubtitle = t('contact.subtitle') || '';
+
+      const emailHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin:0;padding:20px;background:#f5f5f5;font-family:Arial,sans-serif">
+        <table role="presentation" width="700" cellpadding="0" cellspacing="0" style="width:700px;max-width:700px;background:#ffffff;margin:0 auto">
+          <tbody>
+            <!-- Header -->
+            <tr>
+              <td style="padding:24px 30px 20px 30px;background:#ffffff;border-bottom:4px double #2d6a4f">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                  <tbody>
+                    <tr>
+                      <td style="padding-bottom:12px;border-bottom:1px solid #2d6a4f">
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                          <tbody>
+                            <tr>
+                              <td style="padding-bottom:8px;font-family:Georgia,'Times New Roman',serif;font-size:11px;font-weight:400;text-transform:uppercase;letter-spacing:1px;color:#666;text-align:center">
+                                ${date}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="font-family:Georgia,'Times New Roman',serif;font-size:42px;font-weight:700;letter-spacing:-0.5px;line-height:1.1;color:#2d6a4f;text-align:center">
+                                ${siteTitle}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="padding-top:6px;font-family:Georgia,'Times New Roman',serif;font-size:13px;font-style:italic;color:#666;letter-spacing:0.3px;text-align:center">
+                                ${siteSubtitle}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding-top:12px;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#666;text-align:center">
+                        <span style="font-weight:600;color:#2d6a4f">${t('contact.contactInfo') || 'NEW INQUIRY'}</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Message Body -->
+            <tr>
+              <td style="padding:30px;background:#fafaf8">
+                <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#333;margin:0 0 16px 0">${greeting}</p>
+                <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#333;margin:0 0 16px 0">${bodyLine}</p>
+                <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#333;margin:0">${signature}</p>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="padding:20px 30px;background:#fafaf8;border-top:3px double #2d6a4f;text-align:center">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                  <tbody>
+                    <tr>
+                      <td style="padding-bottom:8px;font-family:Georgia,'Times New Roman',serif;font-size:13px;color:#333">
+                        ${t('contact.messageSentDesc') || ''}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#999;line-height:1.6">
+                        © ${new Date().getFullYear()} Portfolio · All rights reserved
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </body>
+      </html>
+      `;
+
+      const payload = { name, email, message, language, subject, html: emailHtml };
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email, message }),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();

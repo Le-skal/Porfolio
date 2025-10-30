@@ -1,4 +1,4 @@
-// Vercel serverless function to send emails via Gmail API
+﻿// Vercel serverless function to send emails via Gmail API
 import nodemailer from 'nodemailer';
 
 export default async function handler(req, res) {
@@ -7,7 +7,7 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { name, email, message } = req.body;
+  const { name, email, message, language, subject: providedSubject, html: providedHtml } = req.body;
 
     // Validate input
     if (!name || !email || !message) {
@@ -156,7 +156,7 @@ export default async function handler(req, res) {
                     </tr>
                     <tr>
                       <td style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#999;line-height:1.6">
-                        © ${new Date().getFullYear()} Portfolio · All rights reserved
+                        Â© ${new Date().getFullYear()} Portfolio Â· All rights reserved
                       </td>
                     </tr>
                   </tbody>
@@ -178,66 +178,24 @@ export default async function handler(req, res) {
             html: htmlContent,
         };
 
-        // Confirmation email to sender
-        const mailToSender = {
-            from: process.env.GMAIL_USER,
-            to: email,
-            subject: `Thank you for contacting me, ${name}!`,
-            html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        </head>
-        <body style="margin:0;padding:20px;background:#f5f5f5;font-family:Arial,sans-serif">
-          <table role="presentation" width="700" cellpadding="0" cellspacing="0" style="width:700px;max-width:700px;background:#ffffff;margin:0 auto">
-            <tbody>
-              <tr>
-                <td style="padding:24px 30px 20px 30px;background:#ffffff;border-bottom:4px double #2d6a4f">
-                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                    <tbody>
-                      <tr>
-                        <td style="font-family:Georgia,'Times New Roman',serif;font-size:36px;font-weight:700;letter-spacing:-0.5px;line-height:1.1;color:#2d6a4f;text-align:center">
-                          Thank You!
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding-top:6px;font-family:Georgia,'Times New Roman',serif;font-size:13px;font-style:italic;color:#666;letter-spacing:0.3px;text-align:center">
-                          Your message has been received
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding:30px;background:#fafaf8">
-                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#333;margin:0 0 16px 0">
-                    Hi ${name},
-                  </p>
-                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#333;margin:0 0 16px 0">
-                    Thank you for reaching out! I've received your message and will get back to you as soon as possible.
-                  </p>
-                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#333;margin:0">
-                    Best regards,<br>
-                    <strong style="color:#2d6a4f">Raphaël Martin</strong>
-                  </p>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding:20px 30px;background:#fafaf8;border-top:3px double #2d6a4f;text-align:center">
-                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#999;margin:0">
-                    © ${new Date().getFullYear()} Portfolio · All rights reserved
-                  </p>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </body>
-        </html>
-      `,
-        };
+        // If the client provided a subject and HTML body, use them (they are localized by the front-end)
+        let mailToSender;
+        if (providedSubject && providedHtml) {
+            mailToSender = {
+                from: process.env.GMAIL_USER,
+                to: email,
+                subject: providedSubject,
+                html: providedHtml,
+            };
+        } else {
+            // Fallback: use simple English default templates
+            mailToSender = {
+                from: process.env.GMAIL_USER,
+                to: email,
+                subject: `Thank you for contacting me, ${name}!`,
+                html: `<p>Hi ${name},</p><p>Thank you for reaching out! I've received your message and will get back to you as soon as possible.</p><p>Best regards,<br/>Raphaël Martin</p>`,
+            };
+        }
 
         // Send both emails
         await Promise.all([
@@ -251,3 +209,4 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'Failed to send email', details: error.message });
     }
 }
+

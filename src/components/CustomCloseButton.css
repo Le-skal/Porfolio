@@ -105,13 +105,37 @@
 .cross-bar {
   position: absolute;
   width: 20vw;
-  height: 3vh;
-  background-color: rgba(255, 255, 255, 0.9);
+  /* Responsive thickness: clamp ensures a minimum px and grows with viewport height but caps on very large screens */
+  height: clamp(20px, 6vh, 44px);
+  background-color: rgb(255, 255, 255);
   top: 50%;
   left: 50%;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.4s ease, background-color 0.3s ease;
+}
+
+
+/* Slightly adjust width and thickness at larger breakpoints for desktop */
+@media (min-width: 300px) {
+  .cross-bar {
+    width: 14vw;
+    height: clamp(10px, 2.6vh, 18px);
+  }
+}
+
+@media (min-width: 800px) {
+  .cross-bar {
+    width: 14vw;
+    height: clamp(18px, 4vh, 30px);
+  }
+}
+
+@media (min-width: 1020px) {
+  .cross-bar {
+    width: 15vw;
+    height: clamp(20px, 4.4vh, 36px);
+  }
 }
 
 /* Brighten bars when closing */
