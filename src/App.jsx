@@ -4,7 +4,8 @@ import { NotFound } from "./pages/NotFound";
 import { Toaster } from "@/components/ui/toaster";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 // Vercel Analytics - mount globally in the app layout
-import { Analytics } from "@vercel/analytics/next";
+// Use the React entrypoint to avoid Next.js-only imports during Vite builds
+import { Analytics } from "@vercel/analytics/react";
 
 function App() {
   return (
